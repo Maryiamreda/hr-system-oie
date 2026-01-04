@@ -1,5 +1,6 @@
 package org.example.hrsystem.Employee;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping("/employee")
-    public ResponseEntity<Employee> addEmployee(@RequestBody EmployeeRequestDTO employee) {
+    public ResponseEntity<Employee> addEmployee(@RequestBody @Valid EmployeeRequestDTO employee) {
         Employee employee1 = employeeService.addEmployee(employee);
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }

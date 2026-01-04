@@ -2,9 +2,11 @@ package org.example.hrsystem.Employee;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Gender;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Entity
@@ -21,4 +23,11 @@ public class Employee {
     private String department;
     private String team;
     private Float grossSalary;
+    @ManyToMany()
+    @JoinTable(
+            name = "employee_expertise",
+            joinColumns = @JoinColumn(name = "employee_id"),
+            inverseJoinColumns = @JoinColumn(name = "expertise_id")
+    )
+    private List<Expertise> expertisesId;
 }
