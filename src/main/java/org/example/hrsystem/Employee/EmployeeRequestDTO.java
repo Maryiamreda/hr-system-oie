@@ -21,6 +21,7 @@ public class EmployeeRequestDTO {
     @NotNull(message = "Department cannot be empty")
     private String department;
     private String team;
+    @NotNull(message = "Salary name cannot be empty")
     @Positive(message = "Salary must be positive")
     private Float grossSalary;
     private List<Long> expertise;

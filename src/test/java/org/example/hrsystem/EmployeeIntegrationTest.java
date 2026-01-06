@@ -58,25 +58,22 @@ public class EmployeeIntegrationTest {
                         .content(objectMapper.writeValueAsString(employee)))
                 //expect output is successful
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(employee.getName()))
+                .andExpect(jsonPath("$.birthDate").value(employee.getBirthDate().toString()))
+                .andExpect(jsonPath("$.graduationDate").value(employee.getGraduationDate().toString()))
+                .andExpect(jsonPath("$.grossSalary").value(employee.getGrossSalary()))
                 .andReturn();
-        //Mock implementation of the HttpServletResponse interface.
-//        MockHttpServletResponse response = result.getResponse();
-//        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
-//        assertThat(responseToEmployeeEntity.getId()).isNotNull();
-//        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
-//        assertThat(dbEmployee).isPresent();
-//        Employee employee1 = dbEmployee.get();
-//        assertThat(employee1.getName()).isEqualTo(employee.getName());
-//        assertThat(employee1.getBirthDate()).isEqualTo(employee.getBirthDate());
-//        assertThat(employee1.getDepartment()).isEqualTo(employee.getDepartment());
-//        db status
+
+//    checkdb status
         List<Employee> employees = employeeRepository.findAll();
         assertThat(employees).hasSize(1);
-        Employee savedEmployee = employees.get(0);
+        Employee savedEmployee = employees.getFirst();
         assertThat(savedEmployee.getName()).isEqualTo("maryiam");
         assertThat(savedEmployee.getBirthDate()).isEqualTo(LocalDate.of(2001, 8, 15));
         assertThat(savedEmployee.getGrossSalary()).isEqualTo(500F);
-
+        assertThat(savedEmployee.getDepartment()).isEqualTo(employee.getDepartment());
+        assertThat(savedEmployee.getGraduationDate()).isEqualTo(employee.getGraduationDate());
+        assertThat(savedEmployee.getGrossSalary()).isEqualTo(employee.getGrossSalary());
     }
 
     @Test
@@ -162,9 +159,10 @@ public class EmployeeIntegrationTest {
         assertThat(savedEmployee.getExpertisesId()).hasSize(1);
         assertThat(savedEmployee.getExpertisesId().get(0).getId()).isEqualTo(expertises.get(0));
     }
+
     @Test
     void addNewEmployee_WithMultipleExpertises_ReturnIsCreated() throws Exception {
-        List<Long> expertises = List.of(1L,2L);
+        List<Long> expertises = List.of(1L, 2L);
         EmployeeRequestDTO dto = EmployeeRequestDTO.builder()
                 .name("maryiam")
                 .gender(Gender.FEMALE)
@@ -185,6 +183,7 @@ public class EmployeeIntegrationTest {
         assertThat(savedEmployee.getExpertisesId().get(1).getId()).isEqualTo(expertises.get(1));
 
     }
+
     @Test
     public void addNewEmployee_WithExpertiseNotValid_ExpectNotFound() throws Exception {
         List<Long> expertises = List.of(878L);
