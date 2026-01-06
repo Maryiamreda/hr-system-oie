@@ -1,5 +1,6 @@
 package org.example.hrsystem.Employee;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.hrsystem.Expertise.Expertise;
@@ -23,6 +24,7 @@ public class Employee {
     private String department;
     private String team;
     private Float grossSalary;
+    private Float netSalary;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "employee_expertise", //name the join table
@@ -30,5 +32,11 @@ public class Employee {
             inverseJoinColumns = @JoinColumn(name = "expertise_id")
     )
     private List<Expertise> expertisesId;
+
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "id")
+    @JsonBackReference
+    private Employee manager;
+
 
 }

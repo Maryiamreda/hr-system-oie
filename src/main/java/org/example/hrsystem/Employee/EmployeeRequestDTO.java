@@ -25,4 +25,5 @@ public class EmployeeRequestDTO {
     @Positive(message = "Salary must be positive")
     private Float grossSalary;
     private List<Long> expertise;
+    private Long managerId;
 }

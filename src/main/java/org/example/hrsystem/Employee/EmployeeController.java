@@ -23,10 +23,5 @@ public class EmployeeController {
         Employee employee1 = employeeService.addEmployee(employee);
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }
-    @GetMapping("/employee")
-    public List<Expertise> get() {
-        List<Employee> employees = employeeRepository.findAll();
-        Employee savedEmployee = employees.get(0);
-        return  savedEmployee.getExpertisesId();
-    }
+
 }
