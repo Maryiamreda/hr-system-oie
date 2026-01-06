@@ -1,7 +1,9 @@
 package org.example.hrsystem.Employee;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Gender;
 import java.time.LocalDate;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class EmployeeRequestDTO {
     @NotNull(message = "Employee name cannot be empty")
+    @Size(min = 2, message = "Employee name cannot be less letters than 3 ")
     private String name;
     private Gender gender;
     private LocalDate birthDate;
@@ -20,5 +23,5 @@ public class EmployeeRequestDTO {
     private String team;
     @Positive(message = "Salary must be positive")
     private Float grossSalary;
-    private List<String> expertise;
+    private List<Long> expertise;
 }

@@ -5,7 +5,6 @@ import lombok.Data;
 import org.example.hrsystem.Employee.Employee;
 
 import java.util.List;
-
 @Entity
 @Data
 @Table(name = "expertise")

@@ -17,17 +17,18 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Gender gender;
+    private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
     private String department;
     private String team;
     private Float grossSalary;
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "employee_expertise",
+            name = "employee_expertise", //name the join table
             joinColumns = @JoinColumn(name = "employee_id"),
             inverseJoinColumns = @JoinColumn(name = "expertise_id")
     )
     private List<Expertise> expertisesId;
+
 }
