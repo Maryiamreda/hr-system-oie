@@ -84,8 +84,8 @@ public class EmployeeIntegrationTest {
 
     @Test
     void addNewEmployee_WithNullName_ReturnsBadRequestStatus() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        String uuidDepartmentName = uuid.toString();
+        String uuidDepartmentName = unique("department-name");
+
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(null)
                 .gender(Gender.FEMALE)
@@ -99,14 +99,14 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
-        Optional<Employee> employeesWithUniqueName = employeeRepository.findByDepartment(uuidDepartmentName);
-        assertThat(employeesWithUniqueName).isEmpty();
+
+        assertThat(employeeRepository.findByDepartment(uuidDepartmentName)).isEmpty();
+
     }
 
     @Test
     void addNewEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        String uuidName = uuid.toString();
+        String uuidName = unique("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -120,14 +120,14 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
-        Optional<Employee> employeesWithUniqueName = employeeRepository.findByName(uuidName);
-        assertThat(employeesWithUniqueName).isEmpty();
+
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+
     }
 
     @Test
     void addNewEmployee_WithNegativeSalary_ReturnsBadRequestStatus() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        String uuidName = uuid.toString();
+        String uuidName = unique("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -141,8 +141,7 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
-        Optional<Employee> employeesWithUniqueName = employeeRepository.findByName(uuidName);
-        assertThat(employeesWithUniqueName).isEmpty();
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
     }
 
     @Test
@@ -201,8 +200,7 @@ public class EmployeeIntegrationTest {
 
     @Test
     public void addNewEmployee_WithExpertiseNotValid_ReturnsNotFoundStatus() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        String uuidName = uuid.toString();
+        String uuidName = unique("unique-name");
         List<Long> expertises = List.of(878L);
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
@@ -218,8 +216,7 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isNotFound());
-        Optional<Employee> employeesWithUniqueName = employeeRepository.findByName(uuidName);
-        assertThat(employeesWithUniqueName).isEmpty();
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
     }
 
     @Test
@@ -249,8 +246,7 @@ public class EmployeeIntegrationTest {
 
     @Test
     public void addNewEmployee_WithInValidManagerId_ReturnsNotFoundStatus() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        String uuidName = uuid.toString();
+        String uuidName = unique("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -265,7 +261,11 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isNotFound());
-        Optional<Employee> employeesWithUniqueName = employeeRepository.findByName(uuidName);
-        assertThat(employeesWithUniqueName).isEmpty();
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+    }
+
+    private String unique(String name) {
+        return name + "-" + UUID.randomUUID();
     }
 }
+
