@@ -1,5 +1,6 @@
 package org.example.hrsystem.Expertise;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.hrsystem.Employee.Employee;
@@ -14,5 +15,6 @@ public class Expertise {
     private Long id;
     private String name;
     @ManyToMany(mappedBy = "expertisesId")
+    @JsonBackReference
     private List<Employee> employeesId;
 }

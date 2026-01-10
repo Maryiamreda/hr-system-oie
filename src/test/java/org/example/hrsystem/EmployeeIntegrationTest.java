@@ -3,14 +3,19 @@ package org.example.hrsystem;
 import com.jayway.jsonpath.JsonPath;
 import org.example.hrsystem.Employee.Employee;
 import org.example.hrsystem.Employee.EmployeeRequestDTO;
+import org.example.hrsystem.Expertise.Expertise;
+import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.enums.Gender;
 import org.example.hrsystem.Employee.EmployeeRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +33,7 @@ import java.util.Optional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-
+@ActiveProfiles("test")
 public class EmployeeIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -36,11 +41,36 @@ public class EmployeeIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private EmployeeRepository employeeRepository;
-
+    @Autowired
+    private ExpertiseRepository expertiseRepository;
     private final String EMPLOYEE_NAME = "maryiam";
-    private final Long MANAGER_ID = 92L;
+    private  Long MANAGER_ID ;
     private final float GROSS_SALARY = 5000F;
+    private Expertise expertise1;
+    private Expertise expertise2;
 
+    @BeforeEach
+    void setUp() {
+        employeeRepository.deleteAll();
+        expertiseRepository.deleteAll();
+
+
+        expertise1 = new Expertise();
+        expertise1.setName("Java");
+        expertise1 = expertiseRepository.save(expertise1);
+
+        expertise2 = new Expertise();
+        expertise2.setName("OOP");
+        expertise2 = expertiseRepository.save(expertise2);
+
+        Employee manager = new Employee();
+        manager.setName("Test Manager");
+        manager.setDepartment("1");
+        manager.setGrossSalary(10000F);
+        manager = employeeRepository.save(manager);
+
+        MANAGER_ID = manager.getId();
+    }
     @Test
     void addNewEmployee_WithAccurateDate_ReturnsCreatedStatus() throws Exception {
         //create new inputEmployee object
@@ -146,7 +176,7 @@ public class EmployeeIntegrationTest {
 
     @Test
     void addNewEmployee_WithValidExpertise_ReturnsCreatedStatus() throws Exception {
-        List<Long> expertises = List.of(1L);
+        List<Long> expertises = List.of(expertise1.getId());
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
                 .gender(Gender.FEMALE)
@@ -173,7 +203,7 @@ public class EmployeeIntegrationTest {
 
     @Test
     void addNewEmployee_WithMultipleExpertises_ReturnsCreatedStatus() throws Exception {
-        List<Long> expertises = List.of(1L, 2L);
+        List<Long> expertises = List.of(expertise1.getId(), expertise2.getId());
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
                 .gender(Gender.FEMALE)
@@ -266,6 +296,10 @@ public class EmployeeIntegrationTest {
 
     private String unique(String name) {
         return name + "-" + UUID.randomUUID();
+    }
+    @AfterEach
+    void tearDown() {
+        employeeRepository.deleteAll();
     }
 }
 
