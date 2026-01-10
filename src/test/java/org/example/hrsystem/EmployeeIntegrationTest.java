@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -293,6 +294,31 @@ public class EmployeeIntegrationTest {
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isNotFound());
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+    }
+
+    //given-arrange when-act then-asset
+    @Test
+    public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
+        //given
+        Long employeeId = mockUser.getId();
+        // act
+        MvcResult result = mockMvc.perform(get("/employee/" + employeeId)).andExpect(status().isOk()).andReturn();
+        //assert
+        MockHttpServletResponse response = result.getResponse();
+        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
+        assertThat(responseToEmployeeEntity.getName()).isEqualTo(mockUser.getName());
+        assertThat(responseToEmployeeEntity.getDepartment()).isEqualTo(mockUser.getDepartment());
+        assertThat(responseToEmployeeEntity.getGrossSalary()).isEqualTo(mockUser.getGrossSalary());
+    }
+    @Test
+    public void getEmployee_WithInvalidId_ReturnNotFoundStatus() throws Exception {
+        //given
+        Long employeeId = 9999L;
+        // act
+       mockMvc.perform(get("/employee/" + employeeId)).andExpect(status().isNotFound()).andReturn();
+        //assert
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeId);
+        assertThat(dbEmployee).isEmpty();
     }
 
     private String unique(String name) {

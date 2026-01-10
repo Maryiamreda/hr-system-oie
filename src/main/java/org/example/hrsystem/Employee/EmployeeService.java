@@ -52,4 +52,13 @@ public class EmployeeService {
         return grossSalary.subtract(totalDeductions)
                 .setScale(2, RoundingMode.HALF_UP);
     }
+
+    public Employee getEmployeeInfo(Long employeeId) {
+        Optional<Employee> employee= employeeRepository.findById(employeeId);
+        if (employee.isEmpty()) {
+            throw new NotFoundException();
+        }
+       return employee.get();
+    }
+
 }

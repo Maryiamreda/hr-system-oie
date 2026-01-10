@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
 @RestController
 @RequestMapping("/hr/api/employee")
 public class EmployeeController {
@@ -18,5 +17,12 @@ public class EmployeeController {
         Employee employee1 = employeeService.addEmployee(employee);
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }
+@GetMapping("/{employeeId}")
+    public ResponseEntity<Employee> getEmployeeInfo(
+        @PathVariable Long employeeId
+) {
+    Employee employee= employeeService.getEmployeeInfo(employeeId);
+    return new ResponseEntity<>(employee, HttpStatus.OK);
+}
 
 }
