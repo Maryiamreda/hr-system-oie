@@ -44,10 +44,11 @@ public class EmployeeIntegrationTest {
     @Autowired
     private ExpertiseRepository expertiseRepository;
     private final String EMPLOYEE_NAME = "maryiam";
-    private  Long MANAGER_ID ;
+
     private final float GROSS_SALARY = 5000F;
     private Expertise expertise1;
     private Expertise expertise2;
+    private Employee mockUser;
 
     @BeforeEach
     void setUp() {
@@ -63,14 +64,14 @@ public class EmployeeIntegrationTest {
         expertise2.setName("OOP");
         expertise2 = expertiseRepository.save(expertise2);
 
-        Employee manager = new Employee();
-        manager.setName("Test Manager");
-        manager.setDepartment("1");
-        manager.setGrossSalary(10000F);
-        manager = employeeRepository.save(manager);
-
-        MANAGER_ID = manager.getId();
+        mockUser = new Employee();
+        mockUser.setName("Test User");
+        mockUser.setDepartment("1");
+        mockUser.setGrossSalary(10000F);
+        mockUser = employeeRepository.save(mockUser);
+        System.out.println("id is" + mockUser.getId());
     }
+
     @Test
     void addNewEmployee_WithAccurateDate_ReturnsCreatedStatus() throws Exception {
         //create new inputEmployee object
@@ -259,7 +260,7 @@ public class EmployeeIntegrationTest {
                 .team("1")
                 .department("1")
                 .grossSalary(GROSS_SALARY)
-                .managerId(MANAGER_ID)
+                .managerId(mockUser.getId())
                 .build();
         MvcResult result = mockMvc.perform(post("/employee")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -297,6 +298,7 @@ public class EmployeeIntegrationTest {
     private String unique(String name) {
         return name + "-" + UUID.randomUUID();
     }
+
     @AfterEach
     void tearDown() {
         employeeRepository.deleteAll();
