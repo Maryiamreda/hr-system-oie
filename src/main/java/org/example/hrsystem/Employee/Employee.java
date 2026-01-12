@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.hrsystem.Expertise.Expertise;
-import org.example.hrsystem.enums.Gender;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,8 +23,10 @@ public class Employee {
     private LocalDate graduationDate;
     private String department;
     private String team;
-    private Float grossSalary;
-    private Float netSalary;
+    @Column(name = "gross_salary", precision = 12, scale = 2)
+    private BigDecimal grossSalary;
+    @Column(name = "net_salary", precision = 12, scale = 2)
+    private BigDecimal netSalary;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "employee_expertise", //name the join table

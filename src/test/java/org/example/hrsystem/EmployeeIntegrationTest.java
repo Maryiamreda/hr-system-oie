@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,8 +45,8 @@ public class EmployeeIntegrationTest {
     @Autowired
     private ExpertiseRepository expertiseRepository;
     private final String EMPLOYEE_NAME = "maryiam";
-
-    private final float GROSS_SALARY = 5000F;
+    private final String EMPLOYEE_API = "/hr/api/employee";
+    private final BigDecimal GROSS_SALARY = new BigDecimal("5000.00");
     private Expertise expertise1;
     private Expertise expertise2;
     private Employee mockUser;
@@ -67,9 +68,8 @@ public class EmployeeIntegrationTest {
         mockUser = new Employee();
         mockUser.setName("Test User");
         mockUser.setDepartment("1");
-        mockUser.setGrossSalary(10000F);
+        mockUser.setGrossSalary(BigDecimal.valueOf(1000.0));
         mockUser = employeeRepository.save(mockUser);
-        System.out.println("id is" + mockUser.getId());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .build();
         //send post request with the object
-        MvcResult result = mockMvc.perform(post("/employee")
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 //expect output is successful
@@ -126,7 +126,7 @@ public class EmployeeIntegrationTest {
                 .team("1")
                 .grossSalary(GROSS_SALARY)
                 .build();
-        mockMvc.perform(post("/employee")
+        mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
@@ -147,7 +147,7 @@ public class EmployeeIntegrationTest {
                 .team("1")
                 .grossSalary(GROSS_SALARY)
                 .build();
-        mockMvc.perform(post("/employee")
+        mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
@@ -166,9 +166,9 @@ public class EmployeeIntegrationTest {
                 .graduationDate(LocalDate.of(2025, 8, 15))
                 .department("1")
                 .team("1")
-                .grossSalary(-400F)
+                .grossSalary(new BigDecimal("-123.45"))
                 .build();
-        mockMvc.perform(post("/employee")
+        mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest());
@@ -188,7 +188,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .expertise(expertises)
                 .build();
-        MvcResult result = mockMvc.perform(post("/employee")
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isCreated()).andReturn();
@@ -215,7 +215,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .expertise(expertises)
                 .build();
-        MvcResult result = mockMvc.perform(post("/employee")
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isCreated()).andReturn();
@@ -243,7 +243,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .expertise(expertises)
                 .build();
-        mockMvc.perform(post("/employee")
+        mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isNotFound());
@@ -262,7 +262,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .managerId(mockUser.getId())
                 .build();
-        MvcResult result = mockMvc.perform(post("/employee")
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isCreated()).andReturn();
@@ -288,7 +288,7 @@ public class EmployeeIntegrationTest {
                 .grossSalary(GROSS_SALARY)
                 .managerId(-888L)
                 .build();
-        mockMvc.perform(post("/employee")
+        mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isNotFound());

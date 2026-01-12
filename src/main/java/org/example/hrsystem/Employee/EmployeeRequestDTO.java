@@ -3,8 +3,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Gender;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class EmployeeRequestDTO {
     private String team;
     @NotNull(message = "Salary name cannot be empty")
     @Positive(message = "Salary must be positive")
-    private Float grossSalary;
+    private BigDecimal grossSalary;
     private List<Long> expertise;
     private Long managerId;
 }

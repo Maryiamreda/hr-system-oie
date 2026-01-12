@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +20,10 @@ public class EmployeeService {
     private EmployeeMapper employeeMapper;
     @Autowired
     private ExpertiseRepository expertiseRepository;
+    private final BigDecimal TAX_RATE = new BigDecimal("0.15");
+    private final BigDecimal FIXED_DEDUCTION = new BigDecimal("500.00");
 
     public Employee addEmployee(EmployeeRequestDTO employeeRequestDTO) {
-        //Net Salary = Gross Salary - (Gross Salary * 0.15) - 500
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
         if (employeeRequestDTO.getExpertise() != null && !employeeRequestDTO.getExpertise().isEmpty()) {
             List<Expertise> expertises = expertiseRepository.findAllById(employeeRequestDTO.getExpertise());
@@ -36,8 +39,17 @@ public class EmployeeService {
             }
             employee.setManager(employeeManager.get());
         }
-        float netSalary = (float) (employeeRequestDTO.getGrossSalary() - (employeeRequestDTO.getGrossSalary() * 0.15) - 500);
+        BigDecimal netSalary = calculateNetSalary(employeeRequestDTO.getGrossSalary());
         employee.setNetSalary(netSalary);
         return employeeRepository.save(employee);
+    }
+
+    private BigDecimal calculateNetSalary(BigDecimal grossSalary) {
+        //ross Salary - (Gross Salary * 0.15) - 500
+        if (grossSalary == null) return BigDecimal.ZERO;
+        BigDecimal taxAmount = grossSalary.multiply(TAX_RATE);
+        BigDecimal totalDeductions = taxAmount.add(FIXED_DEDUCTION);
+        return grossSalary.subtract(totalDeductions)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 }
