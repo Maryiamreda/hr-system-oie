@@ -1,6 +1,8 @@
 package org.example.hrsystem.Employee;
 
 import jakarta.validation.Valid;
+import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
+import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +15,8 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
     @PostMapping
-    public ResponseEntity<Employee> addEmployee(@RequestBody @Valid EmployeeRequestDTO employee) {
-        Employee employee1 = employeeService.addEmployee(employee);
+    public ResponseEntity<EmployeeResponseDTO> addEmployee(@RequestBody @Valid EmployeeRequestDTO employee) {
+        EmployeeResponseDTO employee1 = employeeService.addEmployee(employee);
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }
 @GetMapping("/{employeeId}")

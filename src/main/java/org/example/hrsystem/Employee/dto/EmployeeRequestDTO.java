@@ -1,4 +1,4 @@
-package org.example.hrsystem.Employee;
+package org.example.hrsystem.Employee.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -19,8 +19,8 @@ public class EmployeeRequestDTO {
     private Gender gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
-    @NotNull(message = "Department cannot be empty")
-    private String department;
+    @NotNull(message = "Department name be empty")
+    private String departmentName;
     private String team;
     @NotNull(message = "Salary name cannot be empty")
     @Positive(message = "Salary must be positive")

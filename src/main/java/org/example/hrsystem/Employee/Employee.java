@@ -1,8 +1,8 @@
 package org.example.hrsystem.Employee;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Expertise.Expertise;
 
 import java.math.BigDecimal;
@@ -21,7 +21,6 @@ public class Employee {
     private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
-    private String department;
     private String team;
     @Column(name = "gross_salary", precision = 12, scale = 2)
     private BigDecimal grossSalary;
@@ -34,11 +33,10 @@ public class Employee {
             inverseJoinColumns = @JoinColumn(name = "expertise_id")
     )
     private List<Expertise> expertisesId;
-
     @ManyToOne
     @JoinColumn(referencedColumnName = "id")
-    @JsonBackReference
     private Employee manager;
-
-
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
 }

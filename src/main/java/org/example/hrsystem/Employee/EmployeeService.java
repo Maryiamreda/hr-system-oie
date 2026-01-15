@@ -1,5 +1,9 @@
 package org.example.hrsystem.Employee;
 
+import org.example.hrsystem.Department.Department;
+import org.example.hrsystem.Department.DepartmentRepository;
+import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
+import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.exception.NotFoundException;
@@ -20,28 +24,40 @@ public class EmployeeService {
     private EmployeeMapper employeeMapper;
     @Autowired
     private ExpertiseRepository expertiseRepository;
+    @Autowired
+    private DepartmentRepository departmentRepository;
     private final BigDecimal TAX_RATE = new BigDecimal("0.15");
     private final BigDecimal FIXED_DEDUCTION = new BigDecimal("500.00");
 
-    public Employee addEmployee(EmployeeRequestDTO employeeRequestDTO) {
+    public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
         if (employeeRequestDTO.getExpertise() != null && !employeeRequestDTO.getExpertise().isEmpty()) {
             List<Expertise> expertises = expertiseRepository.findAllById(employeeRequestDTO.getExpertise());
             if (expertises.size() != employeeRequestDTO.getExpertise().size()) {
-                throw new NotFoundException();
+                throw new NotFoundException("Expert Doesn't Exist");
             }
             employee.setExpertisesId(expertises);
         }
         if (employeeRequestDTO.getManagerId() != null) {
             Optional<Employee> employeeManager = employeeRepository.findById(employeeRequestDTO.getManagerId());
             if (employeeManager.isEmpty()) {
-                throw new NotFoundException();
+                throw new NotFoundException("Manager Doesn't Exist");
             }
             employee.setManager(employeeManager.get());
         }
+        if (employeeRequestDTO.getDepartmentName() != null ) {
+            Optional<Department> employeeDepartment=departmentRepository.findByName(employeeRequestDTO.getDepartmentName());
+            if (employeeDepartment.isEmpty()) {
+                throw new NotFoundException("Department Doesn't Exist");
+            }
+//            else  employee.setDepartment(employeeDepartment.get());
+        }
+
         BigDecimal netSalary = calculateNetSalary(employeeRequestDTO.getGrossSalary());
         employee.setNetSalary(netSalary);
-        return employeeRepository.save(employee);
+        Employee newEmployee =employeeRepository.save(employee);
+
+        return employeeMapper.toResponse(newEmployee);
     }
 
     private BigDecimal calculateNetSalary(BigDecimal grossSalary) {
@@ -56,7 +72,7 @@ public class EmployeeService {
     public Employee getEmployeeInfo(Long employeeId) {
         Optional<Employee> employee= employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
-            throw new NotFoundException();
+            throw new NotFoundException("Employee Doesn't Exist");
         }
        return employee.get();
     }

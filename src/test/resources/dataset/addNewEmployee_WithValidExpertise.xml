@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
+    <expertise id="10" name="Java"/>
+    <expertise id="20" name="OOP"/>
+    <employee
+            id="1"
+            name="ROOT_MANAGER"
+            department_id="10"
+            gross_salary="5000.00"
+    />
+
+</dataset>
