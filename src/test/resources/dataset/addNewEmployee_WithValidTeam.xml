@@ -2,5 +2,5 @@
 <dataset >
     <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
     <team id="10" name="UNIQUE_TEAM_NAME"/>
-    <employee id="1" name="ROOT_MANAGER" department_id="10" team_id="10" gross_salary="5000.00"/>
+    <employee id="1" name="ROOT_MANAGER" department_id="10" gross_salary="5000.00"/>
 </dataset>

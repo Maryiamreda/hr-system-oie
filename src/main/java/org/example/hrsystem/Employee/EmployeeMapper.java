@@ -19,17 +19,19 @@ private ExpertiseRepository expertiseRepository;
         employee.setGraduationDate(employeeRequestDTO.getGraduationDate());
 //        employee.setDepartment(employeeRequestDTO.getDepartment());
         employee.setGender(String.valueOf(employeeRequestDTO.getGender()));
-        employee.setTeam(employeeRequestDTO.getTeam());
+//        employee.setTeam(employeeRequestDTO.getTeam().);
         employee.setGrossSalary(employeeRequestDTO.getGrossSalary());
         return employee;
     }
     public EmployeeResponseDTO toResponse(Employee employee){
-        return EmployeeResponseDTO.builder().
+        EmployeeResponseDTO employeeResponseDTO=EmployeeResponseDTO.builder().
                 id(employee.getId()).
                 name(employee.getName())
-//                departmentName(employee.getDepartment().getName())
-                .team(employee.getTeam())
+                .departmentName(employee.getDepartment().getName())
                 .manager(employee.getManager())
+                .expertises(employee.getExpertises())
                 .build();
+        if (employee.getTeam()!=null) employeeResponseDTO.setTeamName(employee.getTeam().getName());
+        return employeeResponseDTO;
     }
 }

@@ -20,10 +20,10 @@ public class EmployeeController {
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }
 @GetMapping("/{employeeId}")
-    public ResponseEntity<Employee> getEmployeeInfo(
+    public ResponseEntity<EmployeeResponseDTO> getEmployeeInfo(
         @PathVariable Long employeeId
 ) {
-    Employee employee= employeeService.getEmployeeInfo(employeeId);
+    EmployeeResponseDTO employee= employeeService.getEmployeeInfo(employeeId);
     return new ResponseEntity<>(employee, HttpStatus.OK);
 }
 

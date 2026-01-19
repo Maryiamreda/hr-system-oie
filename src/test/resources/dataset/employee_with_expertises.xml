@@ -1,26 +1,18 @@
-<!--<?xml version="1.0" encoding="UTF-8"?>-->
-<!--<dataset>-->
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
 
-<!--    <expertise id="10" name="Java"/>-->
-<!--    <expertise id="20" name="OOP"/>-->
+    <expertise id="10" name="Java"/>
+    <expertise id="20" name="OOP"/>
 
-<!--    <employee-->
-<!--            id="1"-->
-<!--            name="maryiam reda"-->
-<!--            department="1"-->
-<!--            gross_salary="5000.00"-->
-<!--            birth_date="2001-08-15"-->
-<!--            graduation_date="2025-08-15"-->
-<!--            gender="FEMALE"-->
-<!--            team="1"-->
-<!--    />-->
+    <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
+    <employee id="1" name="ROOT_MANAGER" department_id="10" gross_salary="5000.00"/>
 
-<!--    <employee_expertise-->
-<!--            employee_id="1"-->
-<!--            expertise_id="10"/>-->
+    <employee_expertise
+            employee_id="1"
+            expertise_id="10"/>
 
-<!--    <employee_expertise-->
-<!--            employee_id="1"-->
-<!--            expertise_id="20"/>-->
+    <employee_expertise
+            employee_id="1"
+            expertise_id="20"/>
 
-<!--</dataset>-->
+</dataset>

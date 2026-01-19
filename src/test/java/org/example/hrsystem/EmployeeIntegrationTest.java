@@ -7,6 +7,8 @@ import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Employee.Employee;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
+import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
+import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Gender;
 import org.example.hrsystem.Employee.EmployeeRepository;
 import org.example.hrsystem.Department.DepartmentRepository;
@@ -29,6 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -56,7 +61,7 @@ public class EmployeeIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private  ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -65,10 +70,21 @@ public class EmployeeIntegrationTest {
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_ROOT_MANAGER_NAME = "ROOT_MANAGER";
     private static final String UNIQUE_DEPARTMENT_NAME = "UNIQUE_DEPARTMENT_NAME";
+    private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
+    private static final Long INVALID_ID = -888L;
+    //
+    private static final String NON_EXISTENCE_NAME = "NON EXISTENCE NAME";
     private static final String EMPLOYEE_API = "/hr/api/employee";
     private static final BigDecimal GROSS_SALARY = new BigDecimal("5000.00");
-
-
+    private static final LocalDate DEFAULT_BIRTH_DATE = LocalDate.of(2001, 8, 15);
+    private static final LocalDate DEFAULT_GRADUATION_DATE = LocalDate.of(2025, 8, 15);
+    private static final String ERROR_EMPLOYEE_NAME_EMPTY = "Employee name cannot be empty";
+    private static final String ERROR_SALARY_POSITIVE = "Salary must be positive";
+    private static final String ERROR_DEPARTMENT_NOT_EXIST = "Department Doesn't Exist";
+    private static final String ERROR_MANAGER_NOT_EXIST = "Manager Doesn't Exist";
+    private static final String ERROR_TEAM_NOT_EXIST = "Team Doesn't Exist";
+    private static final String ERROR_EXPERT_NOT_EXIST = "Expert Doesn't Exist";
+    private static final String ERROR_EMPLOYEE_NOT_EXIST = "Employee Doesn't Exist";
     @BeforeEach
     void setUp() {
 
@@ -76,14 +92,13 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
-    void addNewEmployee_WithAccurateDate_ReturnsCreatedStatus() throws Exception {
+    void addNewEmployee_WithAccurateData_ReturnsCreatedStatus() throws Exception {
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
-                .team("1")
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
                 .build();
@@ -95,14 +110,14 @@ public class EmployeeIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         MockHttpServletResponse response = result.getResponse();
-        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
+        EmployeeResponseDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeResponseDTO.class);
         assertThat(responseToEmployeeEntity.getId()).isNotNull();
         Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
         assertThat(dbEmployee).isPresent();
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getName()).isEqualTo(inputEmployee.getName());
         assertThat(actualEmployee.getDepartment().getName()).isEqualTo(inputEmployee.getDepartmentName());
-        assertThat(actualEmployee.getTeam()).isEqualTo(inputEmployee.getTeam());
+//        assertThat(actualEmployee.getTeam()).isEqualTo(inputEmployee.getTeam());
 
     }
 
@@ -112,10 +127,9 @@ public class EmployeeIntegrationTest {
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(null)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
-                .team("1")
                 .grossSalary(GROSS_SALARY)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
@@ -123,10 +137,10 @@ public class EmployeeIntegrationTest {
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", containsInAnyOrder("Employee name cannot be empty")));
+                .andExpect(jsonPath("$", containsInAnyOrder(ERROR_EMPLOYEE_NAME_EMPTY)));
         Optional<Department> department = departmentRepository.findByName(UNIQUE_DEPARTMENT_NAME);
         assertThat(department).isPresent();
-        assertThat(employeeRepository.findByDepartment(department.get())).isEmpty();
+        assertThat(employeeRepository.findByDepartmentName(UNIQUE_DEPARTMENT_NAME)).isEmpty();
     }
 
     @Test
@@ -137,17 +151,15 @@ public class EmployeeIntegrationTest {
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
-                .team("1")
+
                 .grossSalary(new BigDecimal("-123.45"))
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", containsInAnyOrder("Salary must be positive")));
+                .andExpect(jsonPath("$", containsInAnyOrder(ERROR_SALARY_POSITIVE)));
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
     }
 
@@ -158,9 +170,7 @@ public class EmployeeIntegrationTest {
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
-                .team("1")
+
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
                 .build();
@@ -188,10 +198,10 @@ public class EmployeeIntegrationTest {
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(null)
-                .team("1")
+
                 .grossSalary(GROSS_SALARY)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
@@ -208,15 +218,13 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithNonExistenceDepartmentName_ReturnsNotFoundStatus() throws Exception {
-        String inValidIdDepartmentName = "NON EXISTENCE NAME ";
         String uuidName = unique("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
-                .birthDate(LocalDate.of(2001, 8, 15))
-                .graduationDate(LocalDate.of(2025, 8, 15))
-                .departmentName(inValidIdDepartmentName)
-                .team("1")
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+                .departmentName(NON_EXISTENCE_NAME)
                 .grossSalary(GROSS_SALARY)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
@@ -224,192 +232,234 @@ public class EmployeeIntegrationTest {
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Department Doesn't Exist"));
+                .andExpect(jsonPath("$.message").value(ERROR_DEPARTMENT_NOT_EXIST));
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void addNewEmployee_WithValidExpertise_ReturnsCreatedStatus() throws Exception {
+        List<String> expertises = List.of("OOP");
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(EMPLOYEE_NAME)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .grossSalary(GROSS_SALARY)
+                .expertise(expertises)
+                .build();
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andExpect(status().isCreated()).andReturn();
+        MockHttpServletResponse response = result.getResponse();
+        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
+        assertThat(responseToEmployeeEntity.getId()).isNotNull();
+        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getExpertises()).hasSize(1);
+        assertThat(actualEmployee.getExpertises().get(0).getName()).isEqualTo(expertises.get(0));
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void addNewEmployee_WithMultipleExpertises_ReturnsCreatedStatus() throws Exception {
+        List<String> expertises = List.of("OOP", "Java");
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(EMPLOYEE_NAME)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .grossSalary(GROSS_SALARY)
+                .expertise(expertises)
+                .build();
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andDo(print())
+                .andExpect(status().isCreated()).andReturn();
+        MockHttpServletResponse response = result.getResponse();
+        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
+        assertThat(responseToEmployeeEntity.getId()).isNotNull();
+        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
+        assertThat(dbEmployee).isPresent();
+        List<Expertise> actualEmployeeExpertises = dbEmployee.get().getExpertises();
+        List<String> actualEmployeeExpertisesNames = new ArrayList<>();
+        for (Expertise actualEmployeeExpertise : actualEmployeeExpertises) {
+            actualEmployeeExpertisesNames.add(actualEmployeeExpertise.getName());
+        }
+        assertThat(actualEmployeeExpertisesNames) .containsExactlyInAnyOrderElementsOf(expertises);
+    }
+
+        @Test
+    public void addNewEmployee_WithExpertiseNotValid_ReturnsNotFoundStatus() throws Exception {
+        String uuidName = unique("unique-name");
+        List<String> expertises = List.of("non existence expertise ");
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(uuidName)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .grossSalary(GROSS_SALARY)
+                .expertise(expertises)
+                .build();
+        mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_EXPERT_NOT_EXIST));
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void addNewEmployee_WithManagerId_ReturnsCreatedStatus() throws Exception {
+        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(EMPLOYEE_NAME)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .grossSalary(GROSS_SALARY)
+                .managerId(manager.getId())
+                .build();
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andExpect(status().isCreated()).andReturn();
+        MockHttpServletResponse response = result.getResponse();
+        EmployeeResponseDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeResponseDTO.class);
+        assertThat(responseToEmployeeEntity.getId()).isNotNull();
+        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getManager().getId()).isEqualTo(inputEmployee.getManagerId());
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void addNewEmployee_WithInValidManagerId_ReturnsNotFoundStatus() throws Exception {
+        String uuidName = unique("unique-name");
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(uuidName)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .grossSalary(GROSS_SALARY)
+                .managerId(INVALID_ID)
+                .build();
+        mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void addNewEmployee_WithValidTeam_ReturnsCreatedStatus() throws Exception {
+        //create new inputEmployee object
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(EMPLOYEE_NAME)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .teamName(UNIQUE_TEAM_NAME)
+                .grossSalary(GROSS_SALARY)
+                .build();
+        //send post request with the object
+        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                //expect output is successful
+                .andExpect(status().isCreated())
+                .andReturn();
+        MockHttpServletResponse response = result.getResponse();
+        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
+        assertThat(responseToEmployeeEntity.getId()).isNotNull();
+        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
 
     }
 
-//    @Test
-//    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
-//    void addNewEmployee_WithValidExpertise_ReturnsCreatedStatus() throws Exception {
-//   Expertise expertise1
-//        Department department = departmentRepository.findByName(UNIQUE_DEPARTMENT_NAME);
-//        List<Long> expertises = List.of(expertise1.getId());
-//        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-//                .name(EMPLOYEE_NAME)
-//                .gender(Gender.FEMALE)
-//                .birthDate(LocalDate.of(2001, 8, 15))
-//                .graduationDate(LocalDate.of(2025, 8, 15))
-//                .team("1")
-//                .departmentId(department.getId())
-//                .grossSalary(GROSS_SALARY)
-//                .expertise(expertises)
-//                .build();
-//        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(inputEmployee)))
-//                .andExpect(status().isCreated()).andReturn();
-//        MockHttpServletResponse response = result.getResponse();
-//        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
-//        assertThat(responseToEmployeeEntity.getId()).isNotNull();
-//        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
-//        assertThat(dbEmployee).isPresent();
-//        Employee actualEmployee = dbEmployee.get();
-//        assertThat(actualEmployee.getExpertisesId()).hasSize(1);
-//        assertThat(actualEmployee.getExpertisesId().get(0).getId()).isEqualTo(expertises.get(0));
-//    }
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void addNewEmployee_WithNonExistenceTeamName_ReturnsNotFoundStatus() throws Exception {
+        String inValidIdTeamName = "NON EXISTENCE NAME ";
+        String uuidName = unique("unique-name");
+        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
+                .name(uuidName)
+                .gender(Gender.FEMALE)
+                .birthDate(DEFAULT_BIRTH_DATE)
+                .graduationDate(DEFAULT_GRADUATION_DATE)
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .teamName(inValidIdTeamName)
+                .grossSalary(GROSS_SALARY)
+                .build();
+        mockMvc.perform(post(EMPLOYEE_API)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputEmployee)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_TEAM_NOT_EXIST));
+        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
 
-//    @Test
-//    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
-//    void addNewEmployee_WithMultipleExpertises_ReturnsCreatedStatus() throws Exception {
-//        List<Long> expertises = List.of(expertise1.getId(), expertise2.getId());
-//        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-//                .name(EMPLOYEE_NAME)
-//                .gender(Gender.FEMALE)
-//                .birthDate(LocalDate.of(2001, 8, 15))
-//                .graduationDate(LocalDate.of(2025, 8, 15))
-//                .team("1")
-//                .department("1")
-//                .grossSalary(GROSS_SALARY)
-//                .expertise(expertises)
-//                .build();
-//        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(inputEmployee)))
-//                .andExpect(status().isCreated()).andReturn();
-//        MockHttpServletResponse response = result.getResponse();
-//        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
-//        assertThat(responseToEmployeeEntity.getId()).isNotNull();
-//        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
-//        assertThat(dbEmployee).isPresent();
-//        Employee actualEmployee = dbEmployee.get();
-//        assertThat(actualEmployee.getExpertisesId()
-//                .stream()
-//                .map(Expertise::getId)
-//                .collect(Collectors.toList()))
-//                .containsExactlyInAnyOrderElementsOf(expertises);
+    }
+    //given-arrange when-act then-asset
+    @Test
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
 
-    /// /        assertThat(actualEmployee.getExpertisesId().get(0).getId()).isEqualTo(expertises.get(0));
-    /// /        assertThat(actualEmployee.getExpertisesId().get(1).getId()).isEqualTo(expertises.get(1));
-//    }
-//
-//    @Test
-//    public void addNewEmployee_WithExpertiseNotValid_ReturnsNotFoundStatus() throws Exception {
-//        String uuidName = unique("unique-name");
-//        List<Long> expertises = List.of(878L);
-//        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-//                .name(uuidName)
-//                .gender(Gender.FEMALE)
-//                .birthDate(LocalDate.of(2001, 8, 15))
-//                .graduationDate(LocalDate.of(2025, 8, 15))
-//                .team("1")
-//                .department("1")
-//                .grossSalary(GROSS_SALARY)
-//                .expertise(expertises)
-//                .build();
-//        mockMvc.perform(post(EMPLOYEE_API)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(inputEmployee)))
-//                .andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.message").value("Expert Doesn't Exist"));
-//        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
-//    }
-//
-//    @Test
-//    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
-//    public void addNewEmployee_WithManagerId_ReturnsCreatedStatus() throws Exception {
-//        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-//                .name(EMPLOYEE_NAME)
-//                .gender(Gender.FEMALE)
-//                .birthDate(LocalDate.of(2001, 8, 15))
-//                .graduationDate(LocalDate.of(2025, 8, 15))
-//                .team("1")
-//                .department("1")
-//                .grossSalary(GROSS_SALARY)
-//                .managerId(mockUser.getId())
-//                .build();
-//        MvcResult result = mockMvc.perform(post(EMPLOYEE_API)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(inputEmployee)))
-//                .andExpect(status().isCreated()).andReturn();
-//        MockHttpServletResponse response = result.getResponse();
-//        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
-//        assertThat(responseToEmployeeEntity.getId()).isNotNull();
-//        Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
-//        assertThat(dbEmployee).isPresent();
-//        Employee actualEmployee = dbEmployee.get();
-//        assertThat(actualEmployee.getManager().getId()).isEqualTo(inputEmployee.getManagerId());
-//    }
-//
-//    @Test
-//    public void addNewEmployee_WithInValidManagerId_ReturnsNotFoundStatus() throws Exception {
-//        String uuidName = unique("unique-name");
-//        EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-//                .name(uuidName)
-//                .gender(Gender.FEMALE)
-//                .birthDate(LocalDate.of(2001, 8, 15))
-//                .graduationDate(LocalDate.of(2025, 8, 15))
-//                .team("1")
-//                .department("1")
-//                .grossSalary(GROSS_SALARY)
-//                .managerId(-888L)
-//                .build();
-//        mockMvc.perform(post(EMPLOYEE_API)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(objectMapper.writeValueAsString(inputEmployee)))
-//                .andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.message").value("Manager Doesn't Exist"));
-//        assertThat(employeeRepository.findByName(uuidName)).isEmpty();
-//    }
-//
-//    //given-arrange when-act then-asset
-//    @Test
-//    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
-//
-//    public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
-//        //given
-//        Long employeeId = mockUser.getId();
-//        // act
-//        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + employeeId)).andExpect(status().isOk()).andReturn();
-//        //assert
-//        MockHttpServletResponse response = result.getResponse();
-//        Employee responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), Employee.class);
-//        assertThat(responseToEmployeeEntity.getName()).isEqualTo(mockUser.getName());
-//        assertThat(responseToEmployeeEntity.getDepartment()).isEqualTo(mockUser.getDepartment());
-//        assertThat(responseToEmployeeEntity.getGrossSalary()).isEqualTo(mockUser.getGrossSalary());
-//
-//    }
-//
-//    @Test
-//    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
-//    public void getEmployee_WithInvalidId_ReturnNotFoundStatus() throws Exception {
-//        //given
-//        Long employeeId = 9999L;
-//        // act
-//        mockMvc.perform(get(EMPLOYEE_API + "/" + employeeId))
-//                .andDo(print())
-//                .andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.message").value("Employee Doesn't Exist"))
-//                .andReturn();
-//        //assert
-//        Optional<Employee> dbEmployee = employeeRepository.findById(employeeId);
-//        assertThat(dbEmployee).isEmpty();
-//    }
-//
-//    @Test
-//    @DatabaseSetup(value = "/dataset/employee_with_expertises.xml", type = DatabaseOperation.CLEAN_INSERT)
-//    public void getEmployee_WithMultipleExpertises_ReturnsAllExpertises() throws Exception {
-//
-//        Long employeeId = mockUser.getId();
-//        // when
-//        mockMvc.perform(get(EMPLOYEE_API + "/" + employeeId))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.expertisesId").isArray())
-//                .andExpect(jsonPath("$.expertisesId.length()").value(2))
-//                .andExpect(jsonPath("$.expertisesId[*].id", containsInAnyOrder(10, 20)))
-//                .andExpect(jsonPath("$.expertisesId[*].name", containsInAnyOrder(expertise1.getName(), expertise2.getName())));
-//
-//    }
+    public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
+        //given
+        Employee ExpectedEmployee=  employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        // act
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId())).andExpect(status().isOk()).andReturn();
+        //assert
+        MockHttpServletResponse response = result.getResponse();
+        EmployeeResponseDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeResponseDTO.class);
+        assertThat(responseToEmployeeEntity.getName()).isEqualTo(ExpectedEmployee.getName());
+        assertThat(responseToEmployeeEntity.getDepartmentName()).isEqualTo(ExpectedEmployee.getDepartment().getName());
+        assertThat(responseToEmployeeEntity.getTeamName()).isEqualTo(ExpectedEmployee.getTeam().getName());
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void getEmployee_WithInvalidId_ReturnNotFoundStatus() throws Exception {
+
+        mockMvc.perform(get(EMPLOYEE_API + "/" + INVALID_ID))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
+                .andReturn();
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/employee_with_expertises.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void getEmployee_WithMultipleExpertises_ReturnsAllExpertises() throws Exception {
+
+        Employee ExpectedEmployee=  employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        // when
+        mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expertises").isArray())
+                .andExpect(jsonPath("$.expertises.length()").value(2))
+                .andExpect(jsonPath("$.expertises[*].name", containsInAnyOrder("Java","OOP")));
+
+    }
     private String unique(String name) {
         return name + "-" + UUID.randomUUID();
     }

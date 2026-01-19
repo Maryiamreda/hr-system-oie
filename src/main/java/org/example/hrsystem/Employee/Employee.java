@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Expertise.Expertise;
+import org.example.hrsystem.Team.Team;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ public class Employee {
     private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
-    private String team;
+//    private String team;
     @Column(name = "gross_salary", precision = 12, scale = 2)
     private BigDecimal grossSalary;
     @Column(name = "net_salary", precision = 12, scale = 2)
@@ -32,11 +33,14 @@ public class Employee {
             joinColumns = @JoinColumn(name = "employee_id"),
             inverseJoinColumns = @JoinColumn(name = "expertise_id")
     )
-    private List<Expertise> expertisesId;
+    private List<Expertise> expertises;
     @ManyToOne
     @JoinColumn(referencedColumnName = "id")
     private Employee manager;
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    private Team team;
 }

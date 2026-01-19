@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface EmployeeRepository extends JpaRepository<Employee,Long> {
     List<Employee> findByName(String uuidName);
 
-    List<Employee> findByDepartment(Department department);
+    List<Employee>  findByDepartmentName(String uniqueDepartmentName);
+
 
 }

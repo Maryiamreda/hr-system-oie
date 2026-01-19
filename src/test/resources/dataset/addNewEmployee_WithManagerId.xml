@@ -1,4 +1,6 @@
-<!--<?xml version="1.0" encoding="UTF-8"?>-->
-<!--<dataset >-->
-<!--    <employee id="1" name="maryiam reda" department="101" gross_salary="5000.00"/>-->
-<!--</dataset>-->
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset >
+    <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
+
+    <employee id="1" name="ROOT_MANAGER" department_id="10" gross_salary="5000.00"/>
+</dataset>

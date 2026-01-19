@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.example.hrsystem.Employee.Employee;
+import org.example.hrsystem.Expertise.Expertise;
 
 import java.util.List;
 @Data
@@ -18,7 +19,7 @@ public class EmployeeResponseDTO {
     private String name;
     @NotNull(message = "Department name be empty")
     private String departmentName;
-    private String team;
-    private List<Long> expertise;
+    private String teamName;
+    private List<Expertise> expertises;
     private Employee manager;
 }

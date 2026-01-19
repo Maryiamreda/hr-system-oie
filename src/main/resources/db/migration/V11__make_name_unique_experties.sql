@@ -1,0 +1,1 @@
+alter table expertise add CONSTRAINT unique_name UNIQUE (name);

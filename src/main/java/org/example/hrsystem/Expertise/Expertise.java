@@ -14,7 +14,7 @@ public class Expertise {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @ManyToMany(mappedBy = "expertisesId")
+    @ManyToMany(mappedBy = "expertises")
     @JsonBackReference
     private List<Employee> employeesId;
 }
