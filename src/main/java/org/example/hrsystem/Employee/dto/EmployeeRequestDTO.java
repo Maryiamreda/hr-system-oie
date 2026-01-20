@@ -19,12 +19,13 @@ public class EmployeeRequestDTO {
     private Gender gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
-    @NotNull(message = "Department name be empty")
+    @NotNull(message = "Department name cannot be empty")
     private String departmentName;
     private String teamName;
     @NotNull(message = "Salary name cannot be empty")
     @Positive(message = "Salary must be positive")
     private BigDecimal grossSalary;
     private List<String> expertise;
+    @NotNull(message = "Employee must have a manager")
     private Long managerId;
 }
