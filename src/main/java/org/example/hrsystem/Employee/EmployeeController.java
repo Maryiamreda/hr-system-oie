@@ -26,5 +26,13 @@ public class EmployeeController {
     EmployeeResponseDTO employee= employeeService.getEmployeeInfo(employeeId);
     return new ResponseEntity<>(employee, HttpStatus.OK);
 }
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
+            @PathVariable Long employeeId,
+            @RequestBody EmployeeRequestDTO employeeRequest) {
+        System.out.println("bohoooo");
 
+        EmployeeResponseDTO updatedEmployee = employeeService.updateEmployee(employeeId, employeeRequest);
+        return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
+    }
 }

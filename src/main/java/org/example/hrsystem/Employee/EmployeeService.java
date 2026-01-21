@@ -11,7 +11,6 @@ import org.example.hrsystem.Team.TeamRepository;
 import org.example.hrsystem.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,39 +35,14 @@ public class EmployeeService {
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
-        if (employeeRequestDTO.getExpertise() != null && !employeeRequestDTO.getExpertise().isEmpty()) {
-            List<Expertise> expertises = expertiseRepository.findAllByNameIn(employeeRequestDTO.getExpertise());
-            if (expertises.size() != employeeRequestDTO.getExpertise().size()) {
-                throw new NotFoundException("Expert Doesn't Exist");
-            }
-            employee.setExpertises(expertises);
-        }
-        if (employeeRequestDTO.getManagerId() != null) {
-            Optional<Employee> employeeManager = employeeRepository.findById(employeeRequestDTO.getManagerId());
-            if (employeeManager.isEmpty()) {
-                throw new NotFoundException("Manager Doesn't Exist");
-            }
-            employee.setManager(employeeManager.get());
-        }
-        if (employeeRequestDTO.getDepartmentName() != null ) {
-            Optional<Department> employeeDepartment=departmentRepository.findByName(employeeRequestDTO.getDepartmentName());
-            if (employeeDepartment.isEmpty()) {
-                throw new NotFoundException("Department Doesn't Exist");
-            }
-            else  employee.setDepartment(employeeDepartment.get());
-        }
-        if (employeeRequestDTO.getTeamName() != null ) {
-            Optional<Team> employeeTeam=teamRepository.findByName(employeeRequestDTO.getTeamName());
-            if (employeeTeam.isEmpty()) {
-                throw new NotFoundException("Team Doesn't Exist");
-            }
-            else  employee.setTeam(employeeTeam.get());
-        }
 
+        validateAndUpdateExpertise(employee, employeeRequestDTO);
+        validateAndUpdateManager(employee, employeeRequestDTO);
+        validateAndUpdateDepartment(employee, employeeRequestDTO);
+        validateAndUpdateTeam(employee, employeeRequestDTO);
         BigDecimal netSalary = calculateNetSalary(employeeRequestDTO.getGrossSalary());
         employee.setNetSalary(netSalary);
-        System.out.println("imma here");
-        Employee newEmployee =employeeRepository.save(employee);
+        Employee newEmployee = employeeRepository.save(employee);
         return employeeMapper.toResponse(newEmployee);
     }
 
@@ -82,12 +56,87 @@ public class EmployeeService {
     }
 
     public EmployeeResponseDTO getEmployeeInfo(Long employeeId) {
-        Optional<Employee> employee= employeeRepository.findById(employeeId);
+        Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
             throw new NotFoundException("Employee Doesn't Exist");
         }
 
-       return employeeMapper.toResponse(employee.get());
+        return employeeMapper.toResponse(employee.get());
     }
 
+    public EmployeeResponseDTO updateEmployee(Long employeeId, EmployeeRequestDTO employeeRequestDTO) {
+        Optional<Employee> employee = employeeRepository.findById(employeeId);
+        if (employee.isEmpty()) {
+            throw new NotFoundException("Employee Doesn't Exist");
+        }
+        Employee updatedEmployee = employee.get();
+        if (employeeRequestDTO.getName() != null) {updatedEmployee.setName(employeeRequestDTO.getName());}
+        if (employeeRequestDTO.getGrossSalary() != null) {
+            updatedEmployee.setGrossSalary(employeeRequestDTO.getGrossSalary());
+            updatedEmployee.setNetSalary(calculateNetSalary(employeeRequestDTO.getGrossSalary()));
+        }
+        //UNREQUIRED ATTRIBUTES
+        if (employeeRequestDTO.getGender() != null) {updatedEmployee.setGender(String.valueOf(employeeRequestDTO.getGender()));}
+        if (employeeRequestDTO.getBirthDate() != null) {updatedEmployee.setBirthDate(employeeRequestDTO.getBirthDate());}
+        if (employeeRequestDTO.getGraduationDate() != null) {updatedEmployee.setGraduationDate(employeeRequestDTO.getGraduationDate());}
+
+
+        validateAndUpdateExpertise(updatedEmployee, employeeRequestDTO);
+
+        validateAndUpdateManager(updatedEmployee, employeeRequestDTO);
+        validateAndUpdateDepartment(updatedEmployee, employeeRequestDTO);
+
+        validateAndUpdateTeam(updatedEmployee, employeeRequestDTO);
+        Employee savedUpdatedEmployee = employeeRepository.save(updatedEmployee);
+        return employeeMapper.toResponse(savedUpdatedEmployee);
+    }
+
+
+    //private helper methods
+    //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND SETTING THE DATA IF ITS VALID
+    private void validateAndUpdateExpertise(Employee employee, EmployeeRequestDTO dto) {
+        if (dto.getExpertise() != null && !dto.getExpertise().isEmpty()) {
+            List<Expertise> expertises = expertiseRepository.findAllByNameIn(dto.getExpertise());
+            if (expertises.size() != dto.getExpertise().size()) {
+                throw new NotFoundException("Expert Doesn't Exist");
+            }
+            if(employee.getExpertises()!=null) {
+                expertises.addAll(employee.getExpertises());
+            }
+            employee.setExpertises(expertises);
+        }
+    }
+
+    private void validateAndUpdateManager(Employee employee, EmployeeRequestDTO dto) {
+        if (dto.getManagerId() != null) {
+            Optional<Employee> employeeManager = employeeRepository.findById(dto.getManagerId());
+            if (employeeManager.isEmpty()) {
+                throw new NotFoundException("Manager Doesn't Exist");
+
+            }
+
+            employee.setManager(employeeManager.get());
+        }
+    }
+
+    private void validateAndUpdateDepartment(Employee employee, EmployeeRequestDTO dto) {
+        if (dto.getDepartmentName() != null ) {
+            Optional<Department> employeeDepartment=departmentRepository.findByName(dto.getDepartmentName());
+            if (employeeDepartment.isEmpty()) {
+                throw new NotFoundException("Department Doesn't Exist");
+            }
+            else  employee.setDepartment(employeeDepartment.get());
+        }
+    }
+
+    private void validateAndUpdateTeam(Employee employee, EmployeeRequestDTO dto) {
+        if (dto.getTeamName() != null ) {
+
+            Optional<Team> employeeTeam=teamRepository.findByName(dto.getTeamName());
+            if (employeeTeam.isEmpty()) {
+                throw new NotFoundException("Team Doesn't Exist");
+            }
+            else  employee.setTeam(employeeTeam.get());
+        }
+    }
 }

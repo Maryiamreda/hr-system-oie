@@ -40,12 +40,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,7 +69,9 @@ public class EmployeeIntegrationTest {
 
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_ROOT_MANAGER_NAME = "ROOT_MANAGER";
+    //UNIQUE_EMPLOYEE_NAME_UPDATE
     private static final String UNIQUE_DEPARTMENT_NAME = "UNIQUE_DEPARTMENT_NAME";
+    private static final String UNIQUE_EMPLOYEE_NAME_UPDATE = "UNIQUE_EMPLOYEE_NAME_UPDATE";
     private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
     private static final Long INVALID_ID = -888L;
     //NON EXISTENCE NAME
@@ -90,6 +92,7 @@ public class EmployeeIntegrationTest {
     private static final String ERROR_TEAM_NOT_EXIST = "Team Doesn't Exist";
     private static final String ERROR_EXPERT_NOT_EXIST = "Expert Doesn't Exist";
     private static final String ERROR_EMPLOYEE_NOT_EXIST = "Employee Doesn't Exist";
+
     @BeforeEach
     void setUp() {
 
@@ -204,7 +207,6 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
-
     void addNewEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
@@ -222,7 +224,7 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", containsInAnyOrder( ERROR_DEPARTMENT_NAME_EMPTY )));
+                .andExpect(jsonPath("$", containsInAnyOrder(ERROR_DEPARTMENT_NAME_EMPTY)));
 
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
 
@@ -311,15 +313,15 @@ public class EmployeeIntegrationTest {
         for (Expertise actualEmployeeExpertise : actualEmployeeExpertises) {
             actualEmployeeExpertisesNames.add(actualEmployeeExpertise.getName());
         }
-        assertThat(actualEmployeeExpertisesNames) .containsExactlyInAnyOrderElementsOf(expertises);
+        assertThat(actualEmployeeExpertisesNames).containsExactlyInAnyOrderElementsOf(expertises);
     }
 
-        @Test
-        @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
-        public void addNewEmployee_WithExpertiseNotValid_ReturnsNotFoundStatus() throws Exception {
-            Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+    @Test
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void addNewEmployee_WithExpertiseNotValid_ReturnsNotFoundStatus() throws Exception {
+        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-            String uuidName = unique("unique-name");
+        String uuidName = unique("unique-name");
         List<String> expertises = List.of("non existence expertise ");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
@@ -385,6 +387,7 @@ public class EmployeeIntegrationTest {
                 .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
     public void addNewEmployee_WithNullManagerId_ReturnsBadRequestStatus() throws Exception {
@@ -402,10 +405,11 @@ public class EmployeeIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(inputEmployee)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$", containsInAnyOrder( ERROR_MANAGER_NAME_EMPTY )));
+                .andExpect(jsonPath("$", containsInAnyOrder(ERROR_MANAGER_NAME_EMPTY)));
 
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithValidTeam_ReturnsCreatedStatus() throws Exception {
@@ -463,12 +467,13 @@ public class EmployeeIntegrationTest {
         assertThat(employeeRepository.findByName(uuidName)).isEmpty();
 
     }
+
     //given-arrange when-act then-asset
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
     public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
         //given
-        Employee ExpectedEmployee=  employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         // act
         MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId())).andExpect(status().isOk()).andReturn();
         //assert
@@ -495,13 +500,211 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/employee_with_expertises.xml", type = DatabaseOperation.CLEAN_INSERT)
     public void getEmployee_WithMultipleExpertises_ReturnsAllExpertises() throws Exception {
 
-        Employee ExpectedEmployee=  employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         // when
         mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.expertises").isArray())
                 .andExpect(jsonPath("$.expertises.length()").value(2))
-                .andExpect(jsonPath("$.expertises[*].name", containsInAnyOrder("Java","OOP")));
+                .andExpect(jsonPath("$.expertises[*].name", containsInAnyOrder("Java", "OOP")));
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        String updatedName = unique("updated-employee");
+        BigDecimal updatedSalary = new BigDecimal("7000.00");
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .name(updatedName)
+                .grossSalary(updatedSalary)
+                .build();
+
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andExpect(status().isOk());
+
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getName()).isEqualTo(updatedName);
+        assertThat(actualEmployee.getGrossSalary()).isEqualTo(updatedSalary);
+
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void updateEmployee_WithInValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
+
+        String updatedName = unique("updated-employee");
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .name(updatedName)
+                .build();
+
+        mockMvc.perform(put(EMPLOYEE_API + "/" +INVALID_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
+        //MAKE SURE NOTHING IN THE DB GOT UPDATED WITH THE UNIQUE NAME
+        assertThat(employeeRepository.findByName(updatedName)).isEmpty();
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void updateEmployee_WithManagerId_ReturnsOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .managerId(manager.getId())
+                .build();
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andExpect(status().isOk());
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getManager().getId()).isEqualTo(manager.getId());
+        assertThat(actualEmployee.getManager().getName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithInValidManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
+    public void updateEmployee_WithInValidManagerId_ReturnsNotFoundStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .managerId(INVALID_ID)
+                .build();
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        System.out.println();
+        //MAKE SURE THE OG MANAGER HASN'T GOT UPDATED
+        assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithValidTeam_ReturnsOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        //create new inputEmployee object
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .teamName(UNIQUE_TEAM_NAME)
+                .build();
+        //send post request with the object
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                //expect output is successful
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithNonExistenceTeamName_ReturnsNotFoundStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .teamName(NON_EXISTENCE_NAME)
+
+                .build();
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_TEAM_NOT_EXIST));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getTeam().getName()).isEqualTo(employeeToUpdate.getTeam().getName());
+
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithValidDepartment_ReturnsOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        //create new inputEmployee object
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .departmentName(UNIQUE_DEPARTMENT_NAME)
+                .build();
+        //send post request with the object
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                //expect output is successful
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getDepartment().getName()).isEqualTo(UNIQUE_DEPARTMENT_NAME);
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithNonExistenceDepartmentName_ReturnsNotFoundStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .departmentName(NON_EXISTENCE_NAME)
+                .build();
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_DEPARTMENT_NOT_EXIST));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getDepartment().getName()).isEqualTo(employeeToUpdate.getDepartment().getName());
+
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    void updateEmployee_WithNewExpertise_ReturnsOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        List<String> expertises = List.of("OOP");
+
+        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
+                .expertise(expertises)
+                .build();
+        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                .andDo(print())
+                .andExpect(status().isOk());
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        List<Expertise> actualEmployeeExpertises = dbEmployee.get().getExpertises();
+        List<String> actualEmployeeExpertisesNames = new ArrayList<>();
+        for (Expertise actualEmployeeExpertise : actualEmployeeExpertises) {
+            actualEmployeeExpertisesNames.add(actualEmployeeExpertise.getName());
+            System.out.println("his experience " + actualEmployeeExpertise.getName());
+        }
+        //this fail if there is another expertits in the list
+        assertThat(actualEmployeeExpertisesNames).contains(expertises.get(0));
+
 
     }
     private String unique(String name) {
