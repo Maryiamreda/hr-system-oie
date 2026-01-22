@@ -14,25 +14,27 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
+
     @PostMapping
     public ResponseEntity<EmployeeResponseDTO> addEmployee(@RequestBody @Valid EmployeeRequestDTO employee) {
         EmployeeResponseDTO employee1 = employeeService.addEmployee(employee);
         return new ResponseEntity<>(employee1, HttpStatus.CREATED);
     }
-@GetMapping("/{employeeId}")
+
+    @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeResponseDTO> getEmployeeInfo(
-        @PathVariable Long employeeId
-) {
-    EmployeeResponseDTO employee= employeeService.getEmployeeInfo(employeeId);
-    return new ResponseEntity<>(employee, HttpStatus.OK);
-}
+            @PathVariable Long employeeId
+    ) {
+        EmployeeResponseDTO employee = employeeService.getEmployeeInfo(employeeId);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
+    }
+
     @PutMapping("/{employeeId}")
-    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
+    public ResponseEntity<String> updateEmployee(
             @PathVariable Long employeeId,
             @RequestBody EmployeeRequestDTO employeeRequest) {
-        System.out.println("bohoooo");
 
-        EmployeeResponseDTO updatedEmployee = employeeService.updateEmployee(employeeId, employeeRequest);
-        return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
+       employeeService.updateEmployee(employeeId, employeeRequest);
+        return new ResponseEntity<>( "Employee's Data Updated Successfully",HttpStatus.OK);
     }
 }

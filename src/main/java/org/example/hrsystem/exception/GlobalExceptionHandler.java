@@ -17,6 +17,11 @@ public class GlobalExceptionHandler {
         //return HttpStatus.NOT_FOUND status with the error message in the body
         return new ResponseEntity<>(new ErrorResponse(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+        //return HttpStatus.NOT_FOUND status with the error message in the body
+        return new ResponseEntity<>(new ErrorResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
     //validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<String> > handleValidationExceptions(MethodArgumentNotValidException ex) {

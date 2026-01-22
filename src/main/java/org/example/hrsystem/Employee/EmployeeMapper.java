@@ -17,9 +17,7 @@ private ExpertiseRepository expertiseRepository;
         employee.setName(employeeRequestDTO.getName());
         employee.setBirthDate(employeeRequestDTO.getBirthDate());
         employee.setGraduationDate(employeeRequestDTO.getGraduationDate());
-//        employee.setDepartment(employeeRequestDTO.getDepartment());
         employee.setGender(String.valueOf(employeeRequestDTO.getGender()));
-//        employee.setTeam(employeeRequestDTO.getTeam().);
         employee.setGrossSalary(employeeRequestDTO.getGrossSalary());
         return employee;
     }

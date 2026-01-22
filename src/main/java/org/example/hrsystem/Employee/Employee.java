@@ -22,7 +22,6 @@ public class Employee {
     private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
-//    private String team;
     @Column(name = "gross_salary", precision = 12, scale = 2)
     private BigDecimal grossSalary;
     @Column(name = "net_salary", precision = 12, scale = 2)

@@ -8,6 +8,7 @@ import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
+import org.example.hrsystem.exception.BadRequestException;
 import org.example.hrsystem.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,16 +59,16 @@ public class EmployeeService {
     public EmployeeResponseDTO getEmployeeInfo(Long employeeId) {
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
-            throw new NotFoundException("Employee Doesn't Exist");
+            throw new BadRequestException("Employee Doesn't Exist");
         }
 
         return employeeMapper.toResponse(employee.get());
     }
 
-    public EmployeeResponseDTO updateEmployee(Long employeeId, EmployeeRequestDTO employeeRequestDTO) {
+    public void updateEmployee(Long employeeId, EmployeeRequestDTO employeeRequestDTO) {
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
-            throw new NotFoundException("Employee Doesn't Exist");
+            throw new BadRequestException("Employee Doesn't Exist");
         }
         Employee updatedEmployee = employee.get();
         if (employeeRequestDTO.getName() != null) {updatedEmployee.setName(employeeRequestDTO.getName());}
@@ -88,7 +89,7 @@ public class EmployeeService {
 
         validateAndUpdateTeam(updatedEmployee, employeeRequestDTO);
         Employee savedUpdatedEmployee = employeeRepository.save(updatedEmployee);
-        return employeeMapper.toResponse(savedUpdatedEmployee);
+//        return employeeMapper.toResponse(savedUpdatedEmployee);
     }
 
 
@@ -98,7 +99,7 @@ public class EmployeeService {
         if (dto.getExpertise() != null && !dto.getExpertise().isEmpty()) {
             List<Expertise> expertises = expertiseRepository.findAllByNameIn(dto.getExpertise());
             if (expertises.size() != dto.getExpertise().size()) {
-                throw new NotFoundException("Expert Doesn't Exist");
+                throw new BadRequestException("Expert Doesn't Exist");
             }
             if(employee.getExpertises()!=null) {
                 expertises.addAll(employee.getExpertises());
@@ -111,7 +112,7 @@ public class EmployeeService {
         if (dto.getManagerId() != null) {
             Optional<Employee> employeeManager = employeeRepository.findById(dto.getManagerId());
             if (employeeManager.isEmpty()) {
-                throw new NotFoundException("Manager Doesn't Exist");
+                throw new BadRequestException("Manager Doesn't Exist");
 
             }
 
@@ -123,7 +124,7 @@ public class EmployeeService {
         if (dto.getDepartmentName() != null ) {
             Optional<Department> employeeDepartment=departmentRepository.findByName(dto.getDepartmentName());
             if (employeeDepartment.isEmpty()) {
-                throw new NotFoundException("Department Doesn't Exist");
+                throw new BadRequestException("Department Doesn't Exist");
             }
             else  employee.setDepartment(employeeDepartment.get());
         }
@@ -134,7 +135,7 @@ public class EmployeeService {
 
             Optional<Team> employeeTeam=teamRepository.findByName(dto.getTeamName());
             if (employeeTeam.isEmpty()) {
-                throw new NotFoundException("Team Doesn't Exist");
+                throw new BadRequestException("Team Doesn't Exist");
             }
             else  employee.setTeam(employeeTeam.get());
         }
