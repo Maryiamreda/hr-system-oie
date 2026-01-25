@@ -84,6 +84,7 @@ public class EmployeeIntegrationTest {
     private static final String ERROR_DEPARTMENT_NOT_EXIST = "Department Doesn't Exist";
     private static final String ERROR_DEPARTMENT_NAME_EMPTY = "Department name cannot be empty";
     private static final String ERROR_MANAGER_NAME_EMPTY = "Employee must have a manager";
+    private static final String ERROR_TEAM_NAME_EMPTY = "Employee must have a team";
 
 
     private static final String ERROR_MANAGER_NOT_EXIST = "Manager Doesn't Exist";
@@ -158,7 +159,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNegativeSalary_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -209,7 +210,7 @@ public class EmployeeIntegrationTest {
     void addNewEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -230,10 +231,10 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
-    void addNewEmployee_WithNonValidDepartmentName_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
+    void addNewEmployee_WithNonValidDepartmentName_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -282,7 +283,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml")
     void addNewEmployee_WithMultipleExpertises_ReturnsCreatedStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
@@ -316,11 +317,11 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void addNewEmployee_WithNonValidExpertise_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidExpertise.xml")
+    public void addNewEmployee_WithNonValidExpertise_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         List<String> expertises = List.of("non existence expertise ");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
@@ -367,9 +368,9 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void addNewEmployee_WithNonValidManagerId_ReturnsNotFoundStatus() throws Exception {
-        String uuidName = unique("unique-name");
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml")
+    public void addNewEmployee_WithNonValidManagerId_ReturnsBadRequestStatus() throws Exception {
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -388,9 +389,9 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml")
     public void addNewEmployee_WithNullManagerId_ReturnsBadRequestStatus() throws Exception {
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -410,7 +411,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidTeam.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidTeam.xml")
     void addNewEmployee_WithValidTeam_ReturnsCreatedStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         //create new inputEmployee object
@@ -442,11 +443,11 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
-    void addNewEmployee_WithNonValidTeamName_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
+    void addNewEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         String inValidIdTeamName = "NON EXISTENCE NAME ";
-        String uuidName = unique("unique-name");
+        String uuidName = uniqueNameGenerator("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -469,7 +470,7 @@ public class EmployeeIntegrationTest {
 
     //given-arrange when-act then-asset
     @Test
-    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
         //given
         Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
@@ -485,8 +486,8 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/get_employee_info.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void getEmployee_WithNonValidId_ReturnNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml")
+    public void getEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {
 
         mockMvc.perform(get(EMPLOYEE_API + "/" + INVALID_ID))
                 .andDo(print())
@@ -496,7 +497,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/employee_with_expertises.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/employee_with_expertises.xml")
     public void getEmployee_WithMultipleExpertises_ReturnsAllExpertises() throws Exception {
 
         Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
@@ -510,19 +511,19 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String updatedName = unique("updated-employee");
+        String updatedName = uniqueNameGenerator("updated-employee");
         BigDecimal updatedSalary = new BigDecimal("7000.00");
-        Map<String,Object> bodyMap=new HashMap<>();
-        bodyMap.put("name",updatedName);
-        bodyMap.put("grossSalary",updatedSalary);
-        bodyMap.put("departmentName",UNIQUE_DEPARTMENT_NAME);
-        bodyMap.put("teamName",UNIQUE_TEAM_NAME);
-        bodyMap.put("managerId",manager.getId());
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("name", updatedName);
+        bodyMap.put("grossSalary", updatedSalary);
+        bodyMap.put("departmentName", UNIQUE_DEPARTMENT_NAME);
+        bodyMap.put("teamName", UNIQUE_TEAM_NAME);
+        bodyMap.put("managerId", manager.getId());
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -541,7 +542,7 @@ public class EmployeeIntegrationTest {
         assertThat(actualEmployee.getManager().getName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
         assertThat(actualEmployee.getDepartment().getName()).isEqualTo(UNIQUE_DEPARTMENT_NAME);
-//assert that other data havent changed
+        //assert that other data havent changed
         assertThat(actualEmployee.getGender()).isEqualTo(employeeToUpdate.getGender());
         assertThat(actualEmployee.getBirthDate()).isEqualTo(employeeToUpdate.getBirthDate());
         assertThat(actualEmployee.getGraduationDate()).isEqualTo(employeeToUpdate.getGraduationDate());
@@ -550,10 +551,10 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void updateEmployee_WithNonValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    public void updateEmployee_WithNonValidEmployeeId_ReturnsBadRequestStatus() throws Exception {
 
-        String updatedName = unique("updated-employee");
+        String updatedName = uniqueNameGenerator("updated-employee");
         EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
                 .name(updatedName)
                 .build();
@@ -570,11 +571,11 @@ public class EmployeeIntegrationTest {
 
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void updateEmployee_WithNonValidManagerId_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    public void updateEmployee_WithNonValidManagerId_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
-        Map<String,Object> bodyMap=new HashMap<>();
-        bodyMap.put("managerId" ,INVALID_ID);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("managerId", INVALID_ID);
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .contentType("application/merge-patch+json")
@@ -591,11 +592,11 @@ public class EmployeeIntegrationTest {
 
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
-    void updateEmployee_WithNonValidTeamName_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
-        Map<String,Object> bodyMap=new HashMap<>();
-        bodyMap.put("teamName" ,NON_EXISTENCE_NAME);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("teamName", NON_EXISTENCE_NAME);
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -614,11 +615,11 @@ public class EmployeeIntegrationTest {
 
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
-    void updateEmployee_WithNonValidDepartmentName_ReturnsNotFoundStatus() throws Exception {
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNonValidDepartmentName_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
-        Map<String,Object> bodyMap=new HashMap<>();
-        bodyMap.put("departmentName" ,NON_EXISTENCE_NAME);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("departmentName", NON_EXISTENCE_NAME);
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -635,12 +636,12 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
-    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNewExpertise_ReturnsOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         List<String> expertises = List.of("OOP");
-        Map<String,Object> bodyMap=new HashMap<>();
-        bodyMap.put("expertise" ,expertises);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("expertise", expertises);
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -657,18 +658,110 @@ public class EmployeeIntegrationTest {
         }
         //this fail if there is another expertits in the list
         assertThat(actualEmployeeExpertisesNames).contains(expertises.get(0));
-//should assert that other expertises employee had still exists
+        //should assert that other expertises employee had still exists
         assertThat(actualEmployeeExpertises).containsAll(employeeToUpdate.getExpertises());
+
+    }
+
+    // test for changing valid fields to null
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithValidNullFields_ReturnOkStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("gender" ,null);
+        bodyMap.put("birthDate", null);
+        bodyMap.put("graduationDate", null);
+
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
+                .andDo(print())
+                .andExpect(status().isOk())
+
+                .andExpect(content().string(SUCCESS_EMPLOYEE_DATA_UPDATED));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getGender()).isNull();
+        assertThat(actualEmployee.getBirthDate()).isNull();
+        assertThat(actualEmployee.getGraduationDate()).isNull();
+
+    }
+    // test for changing fields to null that must have value
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("departmentName", null);
+
+
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ERROR_DEPARTMENT_NAME_EMPTY));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getDepartment().getName()).isEqualTo(employeeToUpdate.getDepartment().getName());
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNullManager_ReturnsBadRequestStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("managerId", null);
+
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NAME_EMPTY));
+
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
+        assertThat(actualEmployee.getManager().getName()).isEqualTo(employeeToUpdate.getManager().getName());
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNullTeam_ReturnsBadRequestStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("teamName", null);
+
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ERROR_TEAM_NAME_EMPTY));
+
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
+        assertThat(actualEmployee.getTeam().getName()).isEqualTo(employeeToUpdate.getTeam().getName());
 
 
     }
 
-    private String unique(String name) {
+
+    private String uniqueNameGenerator(String name) {
         return name + "-" + UUID.randomUUID();
     }
 }
 
-//
-//
+
 
 

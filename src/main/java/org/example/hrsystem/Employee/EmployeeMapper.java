@@ -16,13 +16,13 @@ public class EmployeeMapper {
     private ExpertiseRepository expertiseRepository;
 
     public Employee toEntity(EmployeeRequestDTO employeeRequestDTO) {
-        Employee employee = new Employee();
-        employee.setName(employeeRequestDTO.getName());
-        employee.setBirthDate(employeeRequestDTO.getBirthDate());
-        employee.setGraduationDate(employeeRequestDTO.getGraduationDate());
-        employee.setGender(String.valueOf(employeeRequestDTO.getGender()));
-        employee.setGrossSalary(employeeRequestDTO.getGrossSalary());
-        return employee;
+        return Employee.builder()
+                .name(employeeRequestDTO.getName())
+        .birthDate(employeeRequestDTO.getBirthDate())
+                .graduationDate(employeeRequestDTO.getGraduationDate())
+                .gender(String.valueOf(employeeRequestDTO.getGender()))
+                .grossSalary(employeeRequestDTO.getGrossSalary())
+                .build();
     }
 
     public EmployeeResponseDTO toResponse(Employee employee) {
@@ -38,12 +38,14 @@ public class EmployeeMapper {
     }
 
     public EmployeeRequestDTO toDto(Employee employee) {
-        EmployeeRequestDTO dto = new EmployeeRequestDTO();
-        dto.setName(employee.getName());
-        dto.setGender(Gender.valueOf(employee.getGender()));
-        dto.setBirthDate(employee.getBirthDate());
-        dto.setGraduationDate(employee.getGraduationDate());
-        dto.setGrossSalary(employee.getGrossSalary());
+        EmployeeRequestDTO dto =  EmployeeRequestDTO.builder().
+                name(employee.getName())
+                .departmentName(employee.getDepartment().getName())
+                .gender(Gender.valueOf(employee.getGender()))
+                .birthDate(employee.getBirthDate())
+                .graduationDate(employee.getGraduationDate())
+                .grossSalary(employee.getGrossSalary())
+                .build();
         if (employee.getManager() != null) {
             dto.setManagerId(employee.getManager().getId());
         }

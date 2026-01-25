@@ -41,23 +41,14 @@ public class EmployeeService {
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
-
-
-        if (employeeRequestDTO.getManagerId() != null) {
-            employee.setManager(validateManager(employeeRequestDTO.getManagerId()));
-        }
-        if (employeeRequestDTO.getDepartmentName() != null) {
-            employee.setDepartment(validateDepartment(employeeRequestDTO.getDepartmentName()));
-        }
-
+        employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerId()));
+        employee.setDepartment(getDepartmentOrThrow(employeeRequestDTO.getDepartmentName()));
         if (employeeRequestDTO.getTeamName() != null) {
-            employee.setTeam(validateTeam(employeeRequestDTO.getTeamName()));
+            employee.setTeam(getTeamOrThrow(employeeRequestDTO.getTeamName()));
         }
         if (employeeRequestDTO.getExpertise() != null) {
-            employee.setExpertises(validateExpertise(employeeRequestDTO.getExpertise()));
-
+            employee.setExpertises(getExpertiseOrThrow(employeeRequestDTO.getExpertise()));
         }
-
         BigDecimal netSalary = calculateNetSalary(employeeRequestDTO.getGrossSalary());
         employee.setNetSalary(netSalary);
         Employee newEmployee = employeeRepository.save(employee);
@@ -94,35 +85,32 @@ public class EmployeeService {
         if (patchedDto.getName() != null && patchedDto.getName().length() > 2) {
             employee.setName(patchedDto.getName());
         }
-        employee.setGender(String.valueOf(patchedDto.getGender()));
+        employee.setGender(patchedDto.getGender()==null?null:String.valueOf(patchedDto.getGender()));
         employee.setBirthDate(patchedDto.getBirthDate());
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());
             employee.setNetSalary(calculateNetSalary(patchedDto.getGrossSalary()));
         }
-        if (patchedDto.getManagerId() != null &&
-                !Objects.equals(patchedDto.getManagerId(), employee.getManager().getId())) {
-            employee.setManager(validateManager(patchedDto.getManagerId()));
+        if (!Objects.equals(patchedDto.getManagerId(), employee.getManager().getId())) {
+            employee.setManager(getManagerOrThrow(patchedDto.getManagerId()));
         }
 
-        if (patchedDto.getDepartmentName() != null &&
-                !Objects.equals(patchedDto.getDepartmentName(), employee.getDepartment().getName())) {
-            employee.setDepartment(validateDepartment(patchedDto.getDepartmentName()));
+        if (!Objects.equals(patchedDto.getDepartmentName(), employee.getDepartment().getName())) {
+            employee.setDepartment(getDepartmentOrThrow(patchedDto.getDepartmentName()));
         }
-
-        if (patchedDto.getTeamName() != null &&
-                !Objects.equals(patchedDto.getTeamName(), employee.getTeam().getName())) {
-            employee.setTeam(validateTeam(patchedDto.getTeamName()));
+        if (!Objects.equals(patchedDto.getTeamName(), employee.getTeam().getName())) {
+            employee.setTeam(getTeamOrThrow(patchedDto.getTeamName()));
         }
 
         if (patchedDto.getExpertise() != null && !patchedDto.getExpertise().isEmpty()) {
-            List<Expertise> expertises = validateExpertise(patchedDto.getExpertise());
+            List<Expertise> expertises = getExpertiseOrThrow(patchedDto.getExpertise());
             if (employee.getExpertises() != null) {
                 expertises.addAll(employee.getExpertises());
             }
             employee.setExpertises(expertises);
-
+        } else {
+            employee.setExpertises(null);
         }
 
         employeeRepository.save(employee);
@@ -130,32 +118,34 @@ public class EmployeeService {
 
     //private helper methods
     //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND RETURN THE DATA IF ITS VALID
-    private Employee validateManager(Long managerId) {
-        Optional<Employee> employeeManager = employeeRepository.findById(managerId);
-        if (employeeManager.isEmpty()) {
-            throw new BadRequestException("Manager Doesn't Exist");
+    private Employee getManagerOrThrow(Long managerId) {
+        if (managerId == null) {
+            throw new BadRequestException("Employee must have a manager");
         }
-        return employeeManager.get();
 
+        return employeeRepository.findById(managerId).orElseThrow(
+                () -> new BadRequestException("Manager Doesn't Exist"));
     }
 
-    private Department validateDepartment(String departmentName) {
-        Optional<Department> employeeDepartment = departmentRepository.findByName(departmentName);
-        if (employeeDepartment.isEmpty()) {
-            throw new BadRequestException("Department Doesn't Exist");
+
+    private Department getDepartmentOrThrow(String departmentName) {
+        if (departmentName == null) {
+            throw new BadRequestException("Department name cannot be empty");
         }
-        return employeeDepartment.get();
+        return departmentRepository.findByName(departmentName).orElseThrow(
+                () -> new BadRequestException("Department Doesn't Exist")
+        );
     }
 
-    private Team validateTeam(String teamName) {
-        Optional<Team> employeeTeam = teamRepository.findByName(teamName);
-        if (employeeTeam.isEmpty()) {
-            throw new BadRequestException("Team Doesn't Exist");
+    private Team getTeamOrThrow(String teamName) {
+        if (teamName == null) {
+            throw new BadRequestException("Employee must have a team");
         }
-        return employeeTeam.get();
+        return teamRepository.findByName(teamName).orElseThrow(
+                () -> new BadRequestException("Team Doesn't Exist"));
     }
 
-    private List<Expertise> validateExpertise(List<String> requestExpertises) {
+    private List<Expertise> getExpertiseOrThrow(List<String> requestExpertises) {
         List<Expertise> expertises = expertiseRepository.findAllByNameIn(requestExpertises);
         if (expertises.size() != requestExpertises.size()) {
             throw new BadRequestException("Expert Doesn't Exist");

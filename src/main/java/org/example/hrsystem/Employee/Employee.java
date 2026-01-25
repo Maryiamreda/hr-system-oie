@@ -1,7 +1,10 @@
 package org.example.hrsystem.Employee;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Team.Team;
@@ -13,7 +16,10 @@ import java.util.List;
 
 @Entity
 @Data
+@Builder
 @Table(name = "employee")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
