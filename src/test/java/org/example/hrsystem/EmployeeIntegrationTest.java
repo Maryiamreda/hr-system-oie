@@ -159,7 +159,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNegativeSalary_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -210,7 +210,7 @@ public class EmployeeIntegrationTest {
     void addNewEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -234,7 +234,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNonValidDepartmentName_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -321,7 +321,7 @@ public class EmployeeIntegrationTest {
     public void addNewEmployee_WithNonValidExpertise_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         List<String> expertises = List.of("non existence expertise ");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
@@ -370,7 +370,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml")
     public void addNewEmployee_WithNonValidManagerId_ReturnsBadRequestStatus() throws Exception {
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -391,7 +391,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithManagerId.xml")
     public void addNewEmployee_WithNullManagerId_ReturnsBadRequestStatus() throws Exception {
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -447,7 +447,7 @@ public class EmployeeIntegrationTest {
     void addNewEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         String inValidIdTeamName = "NON EXISTENCE NAME ";
-        String uuidName = generateUniqueName("unique-name");
+        String uuidName = appendUUidToString("unique-name");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(uuidName)
                 .gender(Gender.FEMALE)
@@ -516,7 +516,7 @@ public class EmployeeIntegrationTest {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
 
-        String updatedName = generateUniqueName("updated-employee");
+        String updatedName = appendUUidToString("updated-employee");
         BigDecimal updatedSalary = new BigDecimal("7000.00");
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("name", updatedName);
@@ -554,7 +554,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     public void updateEmployee_WithNonValidEmployeeId_ReturnsBadRequestStatus() throws Exception {
 
-        String updatedName = generateUniqueName("updated-employee");
+        String updatedName = appendUUidToString("updated-employee");
         EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
                 .name(updatedName)
                 .build();
@@ -757,7 +757,7 @@ public class EmployeeIntegrationTest {
     }
 
 
-    private String generateUniqueName(String name) {
+    private String appendUUidToString(String name) {
         return name + "-" + UUID.randomUUID();
     }
 }
