@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class EmployeeRequestDTO {
     @NotNull(message = "Employee name cannot be empty")
     @Size(min = 2, message = "Employee name cannot be less letters than 3 ")

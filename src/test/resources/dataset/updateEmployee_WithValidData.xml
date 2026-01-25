@@ -7,7 +7,7 @@
     <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
     <employee id="4" name="MANAGER" department_id="10"  team_id="10" gross_salary="5000.00"/>
 
-    <employee id="1" name="UNIQUE_EMPLOYEE_NAME_UPDATE" department_id="10"  team_id="10" manager_id="4" gender="female" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
+    <employee id="1" name="UNIQUE_EMPLOYEE_NAME_UPDATE" department_id="10"  team_id="10" manager_id="4" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
     <employee id="2" name="ROOT_MANAGER" department_id="10" gross_salary="5000.00"/>
 
     <employee_expertise

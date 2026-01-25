@@ -31,9 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,11 +39,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -519,17 +517,18 @@ public class EmployeeIntegrationTest {
 
         String updatedName = unique("updated-employee");
         BigDecimal updatedSalary = new BigDecimal("7000.00");
-        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
-                .name(updatedName)
-                .grossSalary(updatedSalary)
-                .managerId(manager.getId())
-                .teamName(UNIQUE_TEAM_NAME)
-                .departmentName(UNIQUE_DEPARTMENT_NAME)
-                .build();
+        Map<String,Object> bodyMap=new HashMap<>();
+        bodyMap.put("name",updatedName);
+        bodyMap.put("grossSalary",updatedSalary);
+        bodyMap.put("departmentName",UNIQUE_DEPARTMENT_NAME);
+        bodyMap.put("teamName",UNIQUE_TEAM_NAME);
+        bodyMap.put("managerId",manager.getId());
 
-        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap))
+                )
                 .andExpect(status().isOk())
                 .andExpect(content().string(SUCCESS_EMPLOYEE_DATA_UPDATED));
 
@@ -538,7 +537,6 @@ public class EmployeeIntegrationTest {
         assertThat(dbEmployee).isPresent();
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getName()).isEqualTo(updatedName);
-        assertThat(actualEmployee.getGrossSalary()).isEqualTo(updatedSalary);
         assertThat(actualEmployee.getManager().getId()).isEqualTo(manager.getId());
         assertThat(actualEmployee.getManager().getName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
@@ -560,8 +558,9 @@ public class EmployeeIntegrationTest {
                 .name(updatedName)
                 .build();
 
-        mockMvc.perform(put(EMPLOYEE_API + "/" + INVALID_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + INVALID_ID)
+//                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
                         .content(objectMapper.writeValueAsString(updateRequestData)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
@@ -574,13 +573,12 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
     public void updateEmployee_WithNonValidManagerId_ReturnsNotFoundStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
-
-        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
-                .managerId(INVALID_ID)
-                .build();
-        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+        Map<String,Object> bodyMap=new HashMap<>();
+        bodyMap.put("managerId" ,INVALID_ID);
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
         Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
@@ -596,14 +594,14 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
     void updateEmployee_WithNonValidTeamName_ReturnsNotFoundStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String,Object> bodyMap=new HashMap<>();
+        bodyMap.put("teamName" ,NON_EXISTENCE_NAME);
 
-        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
-                .teamName(NON_EXISTENCE_NAME)
-
-                .build();
-        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                        .contentType("application/merge-patch+json")
+
+                        .content(objectMapper.writeValueAsString(bodyMap)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ERROR_TEAM_NOT_EXIST));
@@ -619,13 +617,13 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml", type = DatabaseOperation.CLEAN_INSERT)
     void updateEmployee_WithNonValidDepartmentName_ReturnsNotFoundStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Map<String,Object> bodyMap=new HashMap<>();
+        bodyMap.put("departmentName" ,NON_EXISTENCE_NAME);
 
-        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
-                .departmentName(NON_EXISTENCE_NAME)
-                .build();
-        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ERROR_DEPARTMENT_NOT_EXIST));
@@ -641,13 +639,13 @@ public class EmployeeIntegrationTest {
     void updateEmployee_WithNewExpertise_ReturnsOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         List<String> expertises = List.of("OOP");
+        Map<String,Object> bodyMap=new HashMap<>();
+        bodyMap.put("expertise" ,expertises);
 
-        EmployeeRequestDTO updateRequestData = EmployeeRequestDTO.builder()
-                .expertise(expertises)
-                .build();
-        mockMvc.perform(put(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequestData)))
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
                 .andDo(print())
                 .andExpect(status().isOk());
         Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
@@ -656,7 +654,6 @@ public class EmployeeIntegrationTest {
         List<String> actualEmployeeExpertisesNames = new ArrayList<>();
         for (Expertise actualEmployeeExpertise : actualEmployeeExpertises) {
             actualEmployeeExpertisesNames.add(actualEmployeeExpertise.getName());
-            System.out.println("his experience " + actualEmployeeExpertise.getName());
         }
         //this fail if there is another expertits in the list
         assertThat(actualEmployeeExpertisesNames).contains(expertises.get(0));

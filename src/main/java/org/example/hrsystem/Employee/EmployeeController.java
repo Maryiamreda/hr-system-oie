@@ -1,5 +1,6 @@
 package org.example.hrsystem.Employee;
 
+import com.gravity9.jsonpatch.mergepatch.JsonMergePatch;
 import jakarta.validation.Valid;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
@@ -25,16 +26,16 @@ public class EmployeeController {
     public ResponseEntity<EmployeeResponseDTO> getEmployeeInfo(
             @PathVariable Long employeeId
     ) {
-        EmployeeResponseDTO employee = employeeService.getEmployeeInfo(employeeId);
+        EmployeeResponseDTO employee = employeeService.getEmployeeResponseDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
-    @PutMapping("/{employeeId}")
+    @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(
             @PathVariable Long employeeId,
-            @RequestBody EmployeeRequestDTO employeeRequest) {
+            @RequestBody JsonMergePatch patch) throws Exception {
 
-       employeeService.updateEmployee(employeeId, employeeRequest);
-        return new ResponseEntity<>( "Employee's Data Updated Successfully",HttpStatus.OK);
+        employeeService.updateEmployee(employeeId, patch);
+        return ResponseEntity.ok("Employee's Data Updated Successfully");
     }
 }

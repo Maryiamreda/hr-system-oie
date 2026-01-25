@@ -1,5 +1,7 @@
 package org.example.hrsystem.exception;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gravity9.jsonpatch.JsonPatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,5 +33,9 @@ public class GlobalExceptionHandler {
         }
         //
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler({ JsonPatchException.class, JsonProcessingException.class })
+    public ResponseEntity<String> handlePatchExceptions(Exception ex) {
+        return ResponseEntity.badRequest().body("Patch error: " + ex.getMessage());
     }
 }
