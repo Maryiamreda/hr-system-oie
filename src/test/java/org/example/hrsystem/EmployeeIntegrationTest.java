@@ -8,6 +8,7 @@ import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Employee.Employee;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
+import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Gender;
 import org.example.hrsystem.Employee.EmployeeRepository;
@@ -473,7 +474,31 @@ public class EmployeeIntegrationTest {
         assertThat(responseToEmployeeEntity.getTeamName()).isEqualTo(ExpectedEmployee.getTeam().getName());
 
     }
+    @Test
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml")
+    public void getSalaryInfo_WithValidEmployeeId_ReturnEmployeeSalaryInfo() throws Exception {
+        //given
+        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        // act
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId()+"/salary-info")).andExpect(status().isOk()).andReturn();
+        //assert
+        MockHttpServletResponse response = result.getResponse();
+        EmployeeSalaryInfoDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeSalaryInfoDTO.class);
+        assertThat(responseToEmployeeEntity.getGrossSalary()).isEqualTo(ExpectedEmployee.getGrossSalary());
+        assertThat(responseToEmployeeEntity.getNetSalary()).isEqualTo(ExpectedEmployee.getNetSalary());
 
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/get_employee_info.xml")
+    public void getSalaryInfo_WithValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
+
+        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
+                .andReturn();
+    }
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {

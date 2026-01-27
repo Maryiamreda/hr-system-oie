@@ -4,6 +4,7 @@ import com.gravity9.jsonpatch.mergepatch.JsonMergePatch;
 import jakarta.validation.Valid;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
+import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,13 @@ public class EmployeeController {
         EmployeeResponseDTO employee = employeeService.getEmployeeResponseDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
-
+    @GetMapping("/{employeeId}/salary-info")
+    public ResponseEntity<EmployeeSalaryInfoDTO> getEmployeeSalaryInfo(
+            @PathVariable Long employeeId
+    ) {
+        EmployeeSalaryInfoDTO employee = employeeService.getEmployeeSalaryInfoDTO(employeeId);
+        return new ResponseEntity<>(employee, HttpStatus.OK);
+    }
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(
             @PathVariable Long employeeId,

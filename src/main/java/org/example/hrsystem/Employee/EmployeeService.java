@@ -7,6 +7,7 @@ import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Department.DepartmentRepository;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
+import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.Team.Team;
@@ -77,6 +78,19 @@ public class EmployeeService {
 
         return employeeMapper.toResponse(employee.get());
     }
+    public EmployeeSalaryInfoDTO getEmployeeSalaryInfoDTO(Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
+        BigDecimal grossSalary = employee.getGrossSalary();
+        BigDecimal netSalary = employee.getNetSalary();
+        if (netSalary == null) {
+            netSalary = calculateNetSalary(grossSalary);
+        }
+        return new EmployeeSalaryInfoDTO(grossSalary, netSalary);
+    }
+
+
+
 
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
