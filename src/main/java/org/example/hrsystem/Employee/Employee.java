@@ -1,10 +1,7 @@
 package org.example.hrsystem.Employee;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Team.Team;
@@ -18,6 +15,7 @@ import java.util.List;
 @Data
 @Builder
 @Table(name = "employee")
+@ToString(exclude = {"manager", "expertises", "team"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Employee {

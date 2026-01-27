@@ -1,4 +1,4 @@
-package org.example.hrsystem;
+package org.example.hrsystem.utilities;
 
 public class EmployeeMessageConstants {
     public static final String ERROR_EMPLOYEE_NAME_EMPTY = "Employee name cannot be empty";

@@ -13,6 +13,7 @@ import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
 import org.example.hrsystem.exception.BadRequestException;
 import org.example.hrsystem.exception.ConflictException;
+import org.example.hrsystem.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.example.hrsystem.EmployeeMessageConstants.*;
+import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 
 @Service
 public class EmployeeService {
@@ -71,7 +72,7 @@ public class EmployeeService {
     public EmployeeResponseDTO getEmployeeResponseDTO(Long employeeId) {
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
-            throw new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST);
+            throw new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST);
         }
 
         return employeeMapper.toResponse(employee.get());
@@ -80,7 +81,7 @@ public class EmployeeService {
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST));
+                .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
 
         EmployeeRequestDTO currentDto = employeeMapper.toDto(employee);
         JsonNode dtoNode = objectMapper.convertValue(currentDto, JsonNode.class);
@@ -123,22 +124,16 @@ public class EmployeeService {
     @Transactional
     public void deleteEmployee(Long employeeId) {
         Employee employeeToDelete = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST));
-        Employee upperManager=employeeToDelete.getManager();
+                .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
+        Employee upperManager = employeeToDelete.getManager();
 
         if (upperManager == null) {
             throw new ConflictException(ERROR_DELETING_EXECUTIVE_EMPLOYEE);
         }
-        List<Employee> subordinates = employeeRepository.findByManager(employeeToDelete);
-
-        if (!subordinates.isEmpty()) {
-            for (Employee subordinate : subordinates) {
-                subordinate.setManager(upperManager);
-                employeeRepository.save(subordinate);
-            }
-        }
+        employeeRepository.updateSubordinatesManager(employeeToDelete, upperManager);
         employeeRepository.delete(employeeToDelete);
     }
+
     //private helper methods
     //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND RETURN THE DATA IF ITS VALID
     private Employee getManagerOrThrow(Long managerId) {

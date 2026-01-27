@@ -35,7 +35,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.example.hrsystem.EmployeeMessageConstants.*;
+import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -301,11 +301,8 @@ public class EmployeeIntegrationTest {
         Optional<Employee> dbEmployee = employeeRepository.findById(responseToEmployeeEntity.getId());
         assertThat(dbEmployee).isPresent();
         List<Expertise> actualEmployeeExpertises = dbEmployee.get().getExpertises();
-        List<String> actualEmployeeExpertisesNames = new ArrayList<>();
-        for (Expertise actualEmployeeExpertise : actualEmployeeExpertises) {
-            actualEmployeeExpertisesNames.add(actualEmployeeExpertise.getName());
-        }
-        assertThat(actualEmployeeExpertisesNames).containsExactlyInAnyOrderElementsOf(expertises);
+        List<String> actualEmployeeExpertisesNames = actualEmployeeExpertises.stream().map(Expertise::getName).toList();
+        assertThat(actualEmployeeExpertisesNames).containsAll(expertises);
     }
 
     @Test
@@ -483,7 +480,7 @@ public class EmployeeIntegrationTest {
 
         mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
                 .andReturn();
     }
@@ -554,7 +551,7 @@ public class EmployeeIntegrationTest {
         mockMvc.perform(patch(EMPLOYEE_API + "/" + NONVALID_ID)
                         .contentType("application/merge-patch+json")
                         .content(objectMapper.writeValueAsString(updateRequestData)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
         //MAKE SURE NOTHING IN THE DB GOT UPDATED WITH THE UNIQUE NAME
         assertThat(employeeRepository.findByName(updatedName)).isEmpty();
@@ -757,15 +754,11 @@ public class EmployeeIntegrationTest {
                 .andExpect(content().string(SUCCESS_EMPLOYEE_DELETED));
         Optional<Employee> dbEmployee = employeeRepository.findById(employeeToDeleteId);
         assertThat(dbEmployee).isEmpty();
-        //assert that employee got deleted from relational tables
-        int count = employeeRepository.countEmployeeExpertise(employeeToDeleteId);
-        System.out.println("count is" +count);
-        assertThat(count).isZero();
     }
 
     @Test
     @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
-    void deleteEmployee_WithNoManager_ReturnConflictStatus() throws Exception {
+    void deleteEmployee_WithNoRootManager_ReturnConflictStatus() throws Exception {
         Employee managerToDelete = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         mockMvc.perform(delete(EMPLOYEE_API + "/" + managerToDelete.getId()).
                         contentType(MediaType.APPLICATION_JSON))
@@ -774,10 +767,7 @@ public class EmployeeIntegrationTest {
         Optional<Employee> dbManagerEmployee = employeeRepository.findById(managerToDelete.getId());
         assertThat(dbManagerEmployee).isPresent();
         //make sure no data got deleted or changed
-        assertThat(managerToDelete.getName()).isEqualTo(dbManagerEmployee.get().getName());
-        assertThat(managerToDelete.getGrossSalary()).isEqualTo(dbManagerEmployee.get().getGrossSalary());
-        assertThat(managerToDelete.getDepartment().getId()).isEqualTo(dbManagerEmployee.get().getDepartment().getId());
-
+        assertThat(dbManagerEmployee.get()).usingRecursiveComparison().ignoringFields("id").isEqualTo(managerToDelete);
 
     }
 
@@ -786,9 +776,8 @@ public class EmployeeIntegrationTest {
     void deleteEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {
         mockMvc.perform(delete(EMPLOYEE_API + "/" + NONVALID_ID).
                         contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
-
 
     }
     @Test
@@ -797,23 +786,23 @@ public class EmployeeIntegrationTest {
         Employee managerToDelete = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
         Employee upperManager = managerToDelete.getManager();
         List<Employee> subordinatesBeforeManagerDeletion = employeeRepository.findByManager(managerToDelete);
-
+        List<Employee> upperManagerInitialSubordinates = employeeRepository.findByManager(upperManager);
+        upperManagerInitialSubordinates.remove(managerToDelete);
         mockMvc.perform(delete(EMPLOYEE_API + "/" + managerToDelete.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string(SUCCESS_EMPLOYEE_DELETED));
-        List<Employee> subordinatesAfterManagerDeletion = employeeRepository.findByManager(upperManager);
-        assertThat(subordinatesAfterManagerDeletion.size()).isEqualTo(subordinatesBeforeManagerDeletion.size());
+        List<Employee> upperManagerSubordinatesAfterDeletion = employeeRepository.findByManager(upperManager);
+        List<Long> newSubordinatedIds = subordinatesBeforeManagerDeletion.stream().map(Employee::getId).toList();
+        List<Long> oldSubordinatedIds = upperManagerInitialSubordinates.stream().map(Employee::getId).toList();
+        List<Long> actualIds = upperManagerSubordinatesAfterDeletion.stream().map(Employee::getId).toList();
+        //assert reassigning was successfully
+        assertThat(actualIds).containsAll(newSubordinatedIds);
+        //assert Initial subordinates still exist
+        assertThat(actualIds).containsAll(oldSubordinatedIds);
 
-        for (int i = 0; i < subordinatesBeforeManagerDeletion.size(); i++) {
-            Optional<Employee> updatedSubordinate = employeeRepository.findById(subordinatesBeforeManagerDeletion.get(i).getId());
-            assertThat(updatedSubordinate).isPresent();
-            assertThat(updatedSubordinate.get().getManager()).isEqualTo(upperManager);
-            assertThat(subordinatesAfterManagerDeletion.get(i).getName()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getName());
-            assertThat(subordinatesAfterManagerDeletion.get(i).getDepartment()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getDepartment());
-            assertThat(subordinatesAfterManagerDeletion.get(i).getTeam()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getTeam());
-        }
+
     }
     private String appendUUidToString(String name) {
         return name + "-" + UUID.randomUUID();

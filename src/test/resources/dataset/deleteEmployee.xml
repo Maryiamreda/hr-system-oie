@@ -8,6 +8,8 @@
     <employee id="2" name="MANAGER" department_id="10"  team_id="10" manager_id="1" gross_salary="5000.00"/>
     <employee id="3" name="UNIQUE_EMPLOYEE_NAME_DELETE" department_id="10"  team_id="10" manager_id="2" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
     <employee id="4" name="EMPLOYEE_UNDER_MANAGER" department_id="10"  team_id="10" manager_id="2" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
+    <employee id="5" name="EMPLOYEE_5" department_id="10"  team_id="10" manager_id="1" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
+    <employee id="6" name="EMPLOYEE_6" department_id="10"  team_id="10" manager_id="1" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
 
     <employee_expertise
             employee_id="3"
