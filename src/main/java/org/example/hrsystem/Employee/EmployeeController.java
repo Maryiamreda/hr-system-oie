@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.example.hrsystem.EmployeeMessageConstants.*;
+
 
 @RestController
 @RequestMapping("/hr/api/employee")
@@ -36,6 +38,13 @@ public class EmployeeController {
             @RequestBody JsonMergePatch patch) throws Exception {
 
         employeeService.updateEmployee(employeeId, patch);
-        return ResponseEntity.ok("Employee's Data Updated Successfully");
+        return ResponseEntity.ok( SUCCESS_EMPLOYEE_DATA_UPDATED );
+    }
+    @DeleteMapping("/{employeeId}")
+    public ResponseEntity<String> deleteEmployee(
+            @PathVariable Long employeeId
+    ) {
+       employeeService.deleteEmployee(employeeId);
+        return ResponseEntity.ok( SUCCESS_EMPLOYEE_DELETED );
     }
 }

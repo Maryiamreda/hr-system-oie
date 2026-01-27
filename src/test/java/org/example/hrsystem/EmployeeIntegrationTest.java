@@ -35,10 +35,11 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.example.hrsystem.EmployeeMessageConstants.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,11 +68,15 @@ public class EmployeeIntegrationTest {
 
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_ROOT_MANAGER_NAME = "ROOT_MANAGER";
+
     //UNIQUE_EMPLOYEE_NAME_UPDATE
     private static final String UNIQUE_DEPARTMENT_NAME = "UNIQUE_DEPARTMENT_NAME";
     private static final String UNIQUE_EMPLOYEE_NAME_UPDATE = "UNIQUE_EMPLOYEE_NAME_UPDATE";
+    private static final String UNIQUE_EMPLOYEE_NAME_DELETE = "UNIQUE_EMPLOYEE_NAME_DELETE";
+    private static final String UNIQUE_MANAGER_NAME_DELETE = "MANAGER";
+
     private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
-    private static final Long INVALID_ID = -888L;
+    private static final Long NONVALID_ID = -888L;
     //NON EXISTENCE NAME
     //Department cannot name be empty
     private static final String NON_EXISTENCE_NAME = "NON EXISTENCE NAME";
@@ -79,19 +84,6 @@ public class EmployeeIntegrationTest {
     private static final BigDecimal GROSS_SALARY = new BigDecimal("5000.00");
     private static final LocalDate DEFAULT_BIRTH_DATE = LocalDate.of(2001, 8, 15);
     private static final LocalDate DEFAULT_GRADUATION_DATE = LocalDate.of(2025, 8, 15);
-    private static final String ERROR_EMPLOYEE_NAME_EMPTY = "Employee name cannot be empty";
-    private static final String ERROR_SALARY_POSITIVE = "Salary must be positive";
-    private static final String ERROR_DEPARTMENT_NOT_EXIST = "Department Doesn't Exist";
-    private static final String ERROR_DEPARTMENT_NAME_EMPTY = "Department name cannot be empty";
-    private static final String ERROR_MANAGER_NAME_EMPTY = "Employee must have a manager";
-    private static final String ERROR_TEAM_NAME_EMPTY = "Employee must have a team";
-
-
-    private static final String ERROR_MANAGER_NOT_EXIST = "Manager Doesn't Exist";
-    private static final String ERROR_TEAM_NOT_EXIST = "Team Doesn't Exist";
-    private static final String ERROR_EXPERT_NOT_EXIST = "Expert Doesn't Exist";
-    private static final String ERROR_EMPLOYEE_NOT_EXIST = "Employee Doesn't Exist";
-    private static final String SUCCESS_EMPLOYEE_DATA_UPDATED = "Employee's Data Updated Successfully";
 
     @BeforeEach
     void setUp() {
@@ -378,7 +370,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerId(INVALID_ID)
+                .managerId(NONVALID_ID)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -489,7 +481,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {
 
-        mockMvc.perform(get(EMPLOYEE_API + "/" + INVALID_ID))
+        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
@@ -559,8 +551,7 @@ public class EmployeeIntegrationTest {
                 .name(updatedName)
                 .build();
 
-        mockMvc.perform(patch(EMPLOYEE_API + "/" + INVALID_ID)
-//                        .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + NONVALID_ID)
                         .contentType("application/merge-patch+json")
                         .content(objectMapper.writeValueAsString(updateRequestData)))
                 .andExpect(status().isBadRequest())
@@ -575,7 +566,7 @@ public class EmployeeIntegrationTest {
     public void updateEmployee_WithNonValidManagerId_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("managerId", INVALID_ID);
+        bodyMap.put("managerId", NONVALID_ID);
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .contentType("application/merge-patch+json")
@@ -669,7 +660,7 @@ public class EmployeeIntegrationTest {
     void updateEmployee_WithValidNullFields_ReturnOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("gender" ,null);
+        bodyMap.put("gender", null);
         bodyMap.put("birthDate", null);
         bodyMap.put("graduationDate", null);
 
@@ -689,6 +680,7 @@ public class EmployeeIntegrationTest {
         assertThat(actualEmployee.getGraduationDate()).isNull();
 
     }
+
     // test for changing fields to null that must have value
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
@@ -732,6 +724,7 @@ public class EmployeeIntegrationTest {
         assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
         assertThat(actualEmployee.getManager().getName()).isEqualTo(employeeToUpdate.getManager().getName());
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNullTeam_ReturnsBadRequestStatus() throws Exception {
@@ -752,11 +745,76 @@ public class EmployeeIntegrationTest {
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(employeeToUpdate.getTeam().getName());
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
+    void deleteNonManagerEmployee_withValidId_ReturnOkStatus() throws Exception {
+        Long employeeToDeleteId = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_DELETE).get(0).getId();
+        mockMvc.perform(delete(EMPLOYEE_API + "/" + employeeToDeleteId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(SUCCESS_EMPLOYEE_DELETED));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToDeleteId);
+        assertThat(dbEmployee).isEmpty();
+        //assert that employee got deleted from relational tables
+        int count = employeeRepository.countEmployeeExpertise(employeeToDeleteId);
+        System.out.println("count is" +count);
+        assertThat(count).isZero();
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
+    void deleteEmployee_WithNoManager_ReturnConflictStatus() throws Exception {
+        Employee managerToDelete = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        mockMvc.perform(delete(EMPLOYEE_API + "/" + managerToDelete.getId()).
+                        contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(ERROR_DELETING_EXECUTIVE_EMPLOYEE));
+        Optional<Employee> dbManagerEmployee = employeeRepository.findById(managerToDelete.getId());
+        assertThat(dbManagerEmployee).isPresent();
+        //make sure no data got deleted or changed
+        assertThat(managerToDelete.getName()).isEqualTo(dbManagerEmployee.get().getName());
+        assertThat(managerToDelete.getGrossSalary()).isEqualTo(dbManagerEmployee.get().getGrossSalary());
+        assertThat(managerToDelete.getDepartment().getId()).isEqualTo(dbManagerEmployee.get().getDepartment().getId());
 
 
     }
 
+    @Test
+    @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
+    void deleteEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {
+        mockMvc.perform(delete(EMPLOYEE_API + "/" + NONVALID_ID).
+                        contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
 
+
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
+    public void deleteManagerEmployee_WithManagerHasSubordinates_ShouldMovesSubordinatesToUpperManager() throws Exception{
+        Employee managerToDelete = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+        Employee upperManager = managerToDelete.getManager();
+        List<Employee> subordinatesBeforeManagerDeletion = employeeRepository.findByManager(managerToDelete);
+
+        mockMvc.perform(delete(EMPLOYEE_API + "/" + managerToDelete.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(SUCCESS_EMPLOYEE_DELETED));
+        List<Employee> subordinatesAfterManagerDeletion = employeeRepository.findByManager(upperManager);
+        assertThat(subordinatesAfterManagerDeletion.size()).isEqualTo(subordinatesBeforeManagerDeletion.size());
+
+        for (int i = 0; i < subordinatesBeforeManagerDeletion.size(); i++) {
+            Optional<Employee> updatedSubordinate = employeeRepository.findById(subordinatesBeforeManagerDeletion.get(i).getId());
+            assertThat(updatedSubordinate).isPresent();
+            assertThat(updatedSubordinate.get().getManager()).isEqualTo(upperManager);
+            assertThat(subordinatesAfterManagerDeletion.get(i).getName()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getName());
+            assertThat(subordinatesAfterManagerDeletion.get(i).getDepartment()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getDepartment());
+            assertThat(subordinatesAfterManagerDeletion.get(i).getTeam()).isEqualTo(subordinatesBeforeManagerDeletion.get(i).getTeam());
+        }
+    }
     private String appendUUidToString(String name) {
         return name + "-" + UUID.randomUUID();
     }

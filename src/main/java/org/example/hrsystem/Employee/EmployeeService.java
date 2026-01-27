@@ -12,15 +12,19 @@ import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
 import org.example.hrsystem.exception.BadRequestException;
+import org.example.hrsystem.exception.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.example.hrsystem.EmployeeMessageConstants.*;
 
 @Service
 public class EmployeeService {
@@ -67,7 +71,7 @@ public class EmployeeService {
     public EmployeeResponseDTO getEmployeeResponseDTO(Long employeeId) {
         Optional<Employee> employee = employeeRepository.findById(employeeId);
         if (employee.isEmpty()) {
-            throw new BadRequestException("Employee Doesn't Exist");
+            throw new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST);
         }
 
         return employeeMapper.toResponse(employee.get());
@@ -76,7 +80,7 @@ public class EmployeeService {
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new BadRequestException("Employee Doesn't Exist"));
+                .orElseThrow(() -> new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST));
 
         EmployeeRequestDTO currentDto = employeeMapper.toDto(employee);
         JsonNode dtoNode = objectMapper.convertValue(currentDto, JsonNode.class);
@@ -85,7 +89,7 @@ public class EmployeeService {
         if (patchedDto.getName() != null && patchedDto.getName().length() > 2) {
             employee.setName(patchedDto.getName());
         }
-        employee.setGender(patchedDto.getGender()==null?null:String.valueOf(patchedDto.getGender()));
+        employee.setGender(patchedDto.getGender() == null ? null : String.valueOf(patchedDto.getGender()));
         employee.setBirthDate(patchedDto.getBirthDate());
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
@@ -116,39 +120,58 @@ public class EmployeeService {
         employeeRepository.save(employee);
     }
 
+    @Transactional
+    public void deleteEmployee(Long employeeId) {
+        Employee employeeToDelete = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new BadRequestException(ERROR_EMPLOYEE_NOT_EXIST));
+        Employee upperManager=employeeToDelete.getManager();
+
+        if (upperManager == null) {
+            throw new ConflictException(ERROR_DELETING_EXECUTIVE_EMPLOYEE);
+        }
+        List<Employee> subordinates = employeeRepository.findByManager(employeeToDelete);
+
+        if (!subordinates.isEmpty()) {
+            for (Employee subordinate : subordinates) {
+                subordinate.setManager(upperManager);
+                employeeRepository.save(subordinate);
+            }
+        }
+        employeeRepository.delete(employeeToDelete);
+    }
     //private helper methods
     //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND RETURN THE DATA IF ITS VALID
     private Employee getManagerOrThrow(Long managerId) {
         if (managerId == null) {
-            throw new BadRequestException("Employee must have a manager");
+            throw new BadRequestException(ERROR_MANAGER_NAME_EMPTY);
         }
 
         return employeeRepository.findById(managerId).orElseThrow(
-                () -> new BadRequestException("Manager Doesn't Exist"));
+                () -> new BadRequestException(ERROR_MANAGER_NOT_EXIST));
     }
 
 
     private Department getDepartmentOrThrow(String departmentName) {
         if (departmentName == null) {
-            throw new BadRequestException("Department name cannot be empty");
+            throw new BadRequestException(ERROR_DEPARTMENT_NAME_EMPTY);
         }
         return departmentRepository.findByName(departmentName).orElseThrow(
-                () -> new BadRequestException("Department Doesn't Exist")
+                () -> new BadRequestException(ERROR_DEPARTMENT_NOT_EXIST)
         );
     }
 
     private Team getTeamOrThrow(String teamName) {
         if (teamName == null) {
-            throw new BadRequestException("Employee must have a team");
+            throw new BadRequestException(ERROR_TEAM_NAME_EMPTY);
         }
         return teamRepository.findByName(teamName).orElseThrow(
-                () -> new BadRequestException("Team Doesn't Exist"));
+                () -> new BadRequestException(ERROR_TEAM_NOT_EXIST));
     }
 
     private List<Expertise> getExpertiseOrThrow(List<String> requestExpertises) {
         List<Expertise> expertises = expertiseRepository.findAllByNameIn(requestExpertises);
         if (expertises.size() != requestExpertises.size()) {
-            throw new BadRequestException("Expert Doesn't Exist");
+            throw new BadRequestException(ERROR_EXPERT_NOT_EXIST);
         }
         return expertises;
 
