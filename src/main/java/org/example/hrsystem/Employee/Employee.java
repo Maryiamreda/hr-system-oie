@@ -28,8 +28,6 @@ public class Employee {
     private LocalDate graduationDate;
     @Column(name = "gross_salary", precision = 12, scale = 2)
     private BigDecimal grossSalary;
-    @Column(name = "net_salary", precision = 12, scale = 2)
-    private BigDecimal netSalary;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "employee_expertise", //name the join table

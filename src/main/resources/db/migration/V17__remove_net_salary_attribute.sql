@@ -1,0 +1,1 @@
+alter table employee drop IF EXISTS  net_salary;

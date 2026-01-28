@@ -15,6 +15,7 @@ import org.example.hrsystem.Employee.EmployeeRepository;
 import org.example.hrsystem.Department.DepartmentRepository;
 
 
+import org.example.hrsystem.utilities.SalaryCalculator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -66,7 +67,8 @@ public class EmployeeIntegrationTest {
     private EmployeeRepository employeeRepository;
     @Autowired
     private DepartmentRepository departmentRepository;
-
+    @Autowired
+    private SalaryCalculator salaryCalculator;
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_ROOT_MANAGER_NAME = "ROOT_MANAGER";
 
@@ -474,18 +476,20 @@ public class EmployeeIntegrationTest {
         assertThat(responseToEmployeeEntity.getTeamName()).isEqualTo(ExpectedEmployee.getTeam().getName());
 
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getSalaryInfo_WithValidEmployeeId_ReturnEmployeeSalaryInfo() throws Exception {
         //given
         Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        BigDecimal netSalary = salaryCalculator.calculateNetSalary(ExpectedEmployee.getGrossSalary());
         // act
-        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId()+"/salary-info")).andExpect(status().isOk()).andReturn();
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId() + "/salary-info")).andExpect(status().isOk()).andReturn();
         //assert
         MockHttpServletResponse response = result.getResponse();
         EmployeeSalaryInfoDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeSalaryInfoDTO.class);
         assertThat(responseToEmployeeEntity.getGrossSalary()).isEqualTo(ExpectedEmployee.getGrossSalary());
-        assertThat(responseToEmployeeEntity.getNetSalary()).isEqualTo(ExpectedEmployee.getNetSalary());
+        assertThat(responseToEmployeeEntity.getNetSalary()).isEqualTo(netSalary);
 
     }
 
@@ -499,6 +503,7 @@ public class EmployeeIntegrationTest {
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
                 .andReturn();
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getEmployee_WithNonValidId_ReturnsBadRequestStatus() throws Exception {
@@ -768,6 +773,7 @@ public class EmployeeIntegrationTest {
         assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(employeeToUpdate.getTeam().getName());
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
     void deleteNonManagerEmployee_withValidId_ReturnOkStatus() throws Exception {
@@ -805,9 +811,10 @@ public class EmployeeIntegrationTest {
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST));
 
     }
+
     @Test
     @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
-    public void deleteManagerEmployee_WithManagerHasSubordinates_ShouldMovesSubordinatesToUpperManager() throws Exception{
+    public void deleteManagerEmployee_WithManagerHasSubordinates_ShouldMovesSubordinatesToUpperManager() throws Exception {
         Employee managerToDelete = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
         Employee upperManager = managerToDelete.getManager();
         List<Employee> subordinatesBeforeManagerDeletion = employeeRepository.findByManager(managerToDelete);
@@ -829,6 +836,7 @@ public class EmployeeIntegrationTest {
 
 
     }
+
     private String appendUUidToString(String name) {
         return name + "-" + UUID.randomUUID();
     }

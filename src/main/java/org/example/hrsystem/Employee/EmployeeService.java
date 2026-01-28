@@ -10,6 +10,7 @@ import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Expertise.ExpertiseRepository;
+import org.example.hrsystem.utilities.SalaryCalculator;
 import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
 import org.example.hrsystem.exception.BadRequestException;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,8 +42,8 @@ public class EmployeeService {
     private TeamRepository teamRepository;
     @Autowired
     private ObjectMapper objectMapper;
-    private final BigDecimal TAX_RATE = new BigDecimal("0.15");
-    private final BigDecimal FIXED_DEDUCTION = new BigDecimal("500.00");
+    @Autowired
+    private SalaryCalculator salaryCalculator;
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
@@ -55,19 +55,8 @@ public class EmployeeService {
         if (employeeRequestDTO.getExpertise() != null) {
             employee.setExpertises(getExpertiseOrThrow(employeeRequestDTO.getExpertise()));
         }
-        BigDecimal netSalary = calculateNetSalary(employeeRequestDTO.getGrossSalary());
-        employee.setNetSalary(netSalary);
         Employee newEmployee = employeeRepository.save(employee);
         return employeeMapper.toResponse(newEmployee);
-    }
-
-    private BigDecimal calculateNetSalary(BigDecimal grossSalary) {
-        //ross Salary - (Gross Salary * 0.15) - 500
-        if (grossSalary == null) return BigDecimal.ZERO;
-        BigDecimal taxAmount = grossSalary.multiply(TAX_RATE);
-        BigDecimal totalDeductions = taxAmount.add(FIXED_DEDUCTION);
-        return grossSalary.subtract(totalDeductions)
-                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public EmployeeResponseDTO getEmployeeResponseDTO(Long employeeId) {
@@ -78,19 +67,14 @@ public class EmployeeService {
 
         return employeeMapper.toResponse(employee.get());
     }
+
     public EmployeeSalaryInfoDTO getEmployeeSalaryInfoDTO(Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
         BigDecimal grossSalary = employee.getGrossSalary();
-        BigDecimal netSalary = employee.getNetSalary();
-        if (netSalary == null) {
-            netSalary = calculateNetSalary(grossSalary);
-        }
+        BigDecimal netSalary = salaryCalculator.calculateNetSalary(grossSalary);
         return new EmployeeSalaryInfoDTO(grossSalary, netSalary);
     }
-
-
-
 
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
@@ -109,7 +93,6 @@ public class EmployeeService {
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());
-            employee.setNetSalary(calculateNetSalary(patchedDto.getGrossSalary()));
         }
         if (!Objects.equals(patchedDto.getManagerId(), employee.getManager().getId())) {
             employee.setManager(getManagerOrThrow(patchedDto.getManagerId()));
