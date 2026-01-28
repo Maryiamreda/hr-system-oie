@@ -32,13 +32,14 @@ public class EmployeeController {
         EmployeeResponseDTO employee = employeeService.getEmployeeResponseDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
-    @GetMapping("/{employeeId}/salary-info")
+    @GetMapping("/{employeeId}/salary")
     public ResponseEntity<EmployeeSalaryInfoDTO> getEmployeeSalaryInfo(
             @PathVariable Long employeeId
     ) {
         EmployeeSalaryInfoDTO employee = employeeService.getEmployeeSalaryInfoDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
+
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(
             @PathVariable Long employeeId,

@@ -80,6 +80,7 @@ public class EmployeeIntegrationTest {
 
     private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
     private static final Long NONVALID_ID = -888L;
+
     //NON EXISTENCE NAME
     //Department cannot name be empty
     private static final String NON_EXISTENCE_NAME = "NON EXISTENCE NAME";
@@ -479,25 +480,25 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
-    public void getSalaryInfo_WithValidEmployeeId_ReturnEmployeeSalaryInfo() throws Exception {
+    public void getSalaryInfo_WithValidEmployeeIdAnd15PercentTaxRateAnd500FixedReduction_ReturnCorrectEmployeeSalary() throws Exception {
         //given
         Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        BigDecimal netSalary = salaryCalculator.calculateNetSalary(ExpectedEmployee.getGrossSalary());
+        //net Salary= gross Salary - (Gross Salary * 0.15) - 500
+        BigDecimal netSalary = new BigDecimal("3750.00");
         // act
-        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId() + "/salary-info")).andExpect(status().isOk()).andReturn();
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId() + "/salary")).andExpect(status().isOk()).andReturn();
         //assert
         MockHttpServletResponse response = result.getResponse();
-        EmployeeSalaryInfoDTO responseToEmployeeEntity = objectMapper.readValue(response.getContentAsString(), EmployeeSalaryInfoDTO.class);
-        assertThat(responseToEmployeeEntity.getGrossSalary()).isEqualTo(ExpectedEmployee.getGrossSalary());
-        assertThat(responseToEmployeeEntity.getNetSalary()).isEqualTo(netSalary);
+        EmployeeSalaryInfoDTO employeeSalaryInfoDTO = objectMapper.readValue(response.getContentAsString(), EmployeeSalaryInfoDTO.class);
+        assertThat(employeeSalaryInfoDTO.getGrossSalary()).isEqualTo(ExpectedEmployee.getGrossSalary());
+        assertThat(employeeSalaryInfoDTO.getNetSalary()).isEqualTo(netSalary);
 
     }
 
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
-    public void getSalaryInfo_WithValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
-
-        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID))
+    public void getSalaryInfo_WithNonValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
+        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID+"/salary"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))

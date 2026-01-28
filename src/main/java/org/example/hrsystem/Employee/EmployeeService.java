@@ -73,7 +73,7 @@ public class EmployeeService {
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
         BigDecimal grossSalary = employee.getGrossSalary();
         BigDecimal netSalary = salaryCalculator.calculateNetSalary(grossSalary);
-        return new EmployeeSalaryInfoDTO(grossSalary, netSalary);
+        return  EmployeeSalaryInfoDTO.builder().grossSalary(grossSalary).netSalary(netSalary).build();
     }
 
 
