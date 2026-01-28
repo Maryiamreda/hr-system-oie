@@ -25,7 +25,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 
 @Service
@@ -76,7 +78,16 @@ public class EmployeeService {
         return  EmployeeSalaryInfoDTO.builder().grossSalary(grossSalary).netSalary(netSalary).build();
     }
 
-
+    public List<EmployeeResponseDTO> getTeamEmployeesResponseList(String teamName) {
+        Optional<Team> team = teamRepository.findByName(teamName);
+        if (team.isEmpty()) {
+            throw new NotFoundException(ERROR_TEAM_NOT_EXIST);
+        }
+        List<Employee> employeeList=employeeRepository.findByTeamName(teamName);
+        return employeeList.stream()
+                .map(employeeMapper::toResponse)
+                .toList();
+    }
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
@@ -168,4 +179,6 @@ public class EmployeeService {
         return expertises;
 
     }
+
+
 }
