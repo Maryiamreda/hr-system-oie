@@ -1,5 +1,6 @@
 package org.example.hrsystem;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
@@ -531,6 +532,36 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
+    public void getEmployeesFromTeam_WithValidTeamName_ReturnOkStatus() throws Exception {
+        List<Employee> dBTeamEmployeeList = employeeRepository.findByTeamName(UNIQUE_TEAM_NAME);
+        List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
+
+//UNIQUE_TEAM_NAME
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/team/" + UNIQUE_TEAM_NAME + "/employees").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<EmployeeResponseDTO>>() {
+        });
+        assertThat(responseTeamEmployeeList).isNotNull();
+        assertThat(responseTeamEmployeeList.size()).isEqualTo(dBTeamEmployeeList.size());
+        List<Long> responseTeamEmployeeListIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
+        assertThat(dBTeamEmployeeListIds).containsAll(responseTeamEmployeeListIds);
+
+
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
+    void getEmployeesFromTeam_WithNonValidTeamName_ReturnsNotFoundStatus() throws Exception {
+        mockMvc.perform(get(EMPLOYEE_API + "/team/" + NONVALID_ID + "/employees"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_TEAM_NOT_EXIST))
+                .andReturn();
+    }
+
+    @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
@@ -777,7 +808,7 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/deleteEmployee.xml")
-    void deleteNonManagerEmployee_withValidId_ReturnOkStatus() throws Exception {
+    void deleteNonManagerEmployee_WithValidId_ReturnOkStatus() throws Exception {
         Long employeeToDeleteId = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_DELETE).get(0).getId();
         mockMvc.perform(delete(EMPLOYEE_API + "/" + employeeToDeleteId)
                         .contentType(MediaType.APPLICATION_JSON)
