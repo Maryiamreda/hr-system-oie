@@ -1,5 +1,7 @@
 package org.example.hrsystem.Employee;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,5 +25,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByManager(Employee managerId);
 
-    List<Employee> findByTeamName(String teamName);
+    Page<Employee> findByTeamName(String teamName, Pageable pageable);
 }

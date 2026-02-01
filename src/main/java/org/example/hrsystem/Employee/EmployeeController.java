@@ -6,6 +6,9 @@ import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,12 +44,13 @@ public class EmployeeController {
         EmployeeSalaryInfoDTO employee = employeeService.getEmployeeSalaryInfoDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
-    @GetMapping("/team/{teamName}/employees")
-    public ResponseEntity<List<EmployeeResponseDTO>> getTeamEmployees(
-            @PathVariable String teamName
+    @GetMapping
+    public ResponseEntity<Page<EmployeeResponseDTO>> getTeamEmployees(
+            @RequestParam  String teamName,
+            @PageableDefault(size = 3) Pageable pageable
     ) {
-        List<EmployeeResponseDTO>  teamEmployees= employeeService.getTeamEmployeesResponseList(teamName);
-        return new ResponseEntity<>(teamEmployees, HttpStatus.OK);
+        Page<EmployeeResponseDTO> teamEmployees = employeeService.getTeamEmployeesResponseList(teamName, pageable);
+        return ResponseEntity.ok(teamEmployees);
     }
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(

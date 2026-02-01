@@ -18,6 +18,8 @@ import org.example.hrsystem.exception.ConflictException;
 import org.example.hrsystem.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,19 +77,14 @@ public class EmployeeService {
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
         BigDecimal grossSalary = employee.getGrossSalary();
         BigDecimal netSalary = salaryCalculator.calculateNetSalary(grossSalary);
-        return  EmployeeSalaryInfoDTO.builder().grossSalary(grossSalary).netSalary(netSalary).build();
+        return EmployeeSalaryInfoDTO.builder().grossSalary(grossSalary).netSalary(netSalary).build();
     }
 
-    public List<EmployeeResponseDTO> getTeamEmployeesResponseList(String teamName) {
-        Optional<Team> team = teamRepository.findByName(teamName);
-        if (team.isEmpty()) {
-            throw new NotFoundException(ERROR_TEAM_NOT_EXIST);
-        }
-        List<Employee> employeeList=employeeRepository.findByTeamName(teamName);
-        return employeeList.stream()
-                .map(employeeMapper::toResponse)
-                .toList();
+    public Page<EmployeeResponseDTO> getTeamEmployeesResponseList(String teamName, Pageable pageable) {
+        Page<Employee> employeePage = employeeRepository.findByTeamName(teamName, pageable);
+        return employeePage.map(employeeMapper::toResponse);
     }
+
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));

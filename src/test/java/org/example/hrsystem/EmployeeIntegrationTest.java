@@ -5,6 +5,8 @@ import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
+import com.jayway.jsonpath.JsonPath;
+import net.minidev.json.JSONArray;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Employee.Employee;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
@@ -20,6 +22,9 @@ import org.example.hrsystem.utilities.SalaryCalculator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,6 +86,7 @@ public class EmployeeIntegrationTest {
 
     private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
     private static final Long NONVALID_ID = -888L;
+    private static final String NONVALID_TEAM_NAME = "NONVALID_TEAM_NAME";
 
     //NON EXISTENCE NAME
     //Department cannot name be empty
@@ -534,18 +540,31 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
     public void getEmployeesFromTeam_WithValidTeamName_ReturnOkStatus() throws Exception {
-        List<Employee> dBTeamEmployeeList = employeeRepository.findByTeamName(UNIQUE_TEAM_NAME);
-        List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
+        int page = 0;
+        int size = 6;
+        Pageable pageable = PageRequest.of(page, size);
 
-//UNIQUE_TEAM_NAME
-        MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/team/" + UNIQUE_TEAM_NAME + "/employees").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andReturn();
+        Page<Employee> dBTeamEmployeeList = employeeRepository.findByTeamName(UNIQUE_TEAM_NAME , pageable);
+        List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
+         //UNIQUE_TEAM_NAME
+        MvcResult result = mockMvc.perform(get(EMPLOYEE_API)
+                .param("teamName", UNIQUE_TEAM_NAME)
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size) )
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(size))
+                .andExpect(jsonPath("$.numberOfElements").value(dBTeamEmployeeListIds.size()))
+                .andExpect(jsonPath("$.number").value(page))
+                .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(response.getContentAsString(), new TypeReference<List<EmployeeResponseDTO>>() {
+        JSONArray contentListJson = JsonPath.read(response.getContentAsString(), "$.content");
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<List<EmployeeResponseDTO>>() {
         });
         assertThat(responseTeamEmployeeList).isNotNull();
-        assertThat(responseTeamEmployeeList.size()).isEqualTo(dBTeamEmployeeList.size());
         List<Long> responseTeamEmployeeListIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
+        assertThat(responseTeamEmployeeListIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
         assertThat(dBTeamEmployeeListIds).containsAll(responseTeamEmployeeListIds);
 
 
@@ -553,11 +572,10 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
-    void getEmployeesFromTeam_WithNonValidTeamName_ReturnsNotFoundStatus() throws Exception {
-        mockMvc.perform(get(EMPLOYEE_API + "/team/" + NONVALID_ID + "/employees"))
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value(ERROR_TEAM_NOT_EXIST))
+    void getEmployeesFromTeam_WithNonValidTeamName_ReturnsOkStatusWithEmptyContent() throws Exception {
+        mockMvc.perform(get(EMPLOYEE_API ).param("teamName" , NONVALID_TEAM_NAME))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
                 .andReturn();
     }
 
