@@ -24,6 +24,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                                    @Param("newManager") Employee newManager);
 
     List<Employee> findByManager(Employee managerId);
-
+    Page<Employee> findByManager(Employee managerId , Pageable pageable);
     Page<Employee> findByTeamName(String teamName, Pageable pageable);
 }

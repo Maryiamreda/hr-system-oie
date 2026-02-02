@@ -53,11 +53,12 @@ public class EmployeeController {
         Page<EmployeeResponseDTO> teamEmployees = employeeService.getTeamEmployeesResponseList(teamName, pageable);
         return new ResponseEntity<>(teamEmployees,HttpStatus.OK);
     }
-    @GetMapping("/manager/{managerId}/subordinates")
-    public ResponseEntity<List<EmployeeResponseDTO>> getManagerDirectSubordinates(
-            @PathVariable Long managerId
+    @GetMapping("/{managerId}/subordinates")
+    public ResponseEntity<Page<EmployeeResponseDTO>> getManagerDirectSubordinates(
+            @PathVariable Long managerId,
+              @PageableDefault(size = 3) Pageable pageable
     ) {
-        List<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId);
+        Page<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId,pageable);
         return new ResponseEntity<>(subordinates,HttpStatus.OK);
     }
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")

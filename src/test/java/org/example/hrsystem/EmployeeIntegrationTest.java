@@ -9,6 +9,7 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Employee.Employee;
+import org.example.hrsystem.Employee.EmployeeMapper;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
@@ -75,7 +76,7 @@ public class EmployeeIntegrationTest {
     @Autowired
     private DepartmentRepository departmentRepository;
     @Autowired
-    private SalaryCalculator salaryCalculator;
+    private EmployeeMapper employeeMapper;
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_ROOT_MANAGER_NAME = "ROOT_MANAGER";
 
@@ -562,7 +563,8 @@ public class EmployeeIntegrationTest {
 
         MockHttpServletResponse response = result.getResponse();
         JSONArray contentListJson = JsonPath.read(response.getContentAsString(), "$.content");
-        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<>() {});
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<>() {
+        });
         assertThat(responseTeamEmployeeList).isNotNull();
         List<Long> responseTeamEmployeeListIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
         assertThat(responseTeamEmployeeListIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
@@ -584,27 +586,42 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/employeeHierarchy.xml")
     public void getDirectSubordinates_WithValidManager_ReturnsOkStatusWithDirectSubordinates() throws Exception {
         Employee manager = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
-
-        List<Employee> dBTeamEmployeeList = employeeRepository.findByManager(manager);
+        Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+        Page<Employee> dBTeamEmployeeList = employeeRepository.findByManager(manager, pageable);
         List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
-
+        List<EmployeeResponseDTO> dBEmployeeResponseDTOList = dBTeamEmployeeList.getContent().stream().map(employeeMapper::toResponse).toList();
         MvcResult result = mockMvc.perform(
-                        get(EMPLOYEE_API + "/manager/" + manager.getId() + "/subordinates")
+                        get(EMPLOYEE_API + "/" + manager.getId() + "/subordinates")
+                                .param("page", String.valueOf(DEFAULT_PAGE_NUMBER))
+                                .param("size", String.valueOf(DEFAULT_PAGE_SIZE))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(DEFAULT_PAGE_SIZE))
+                .andExpect(jsonPath("$.numberOfElements").value(dBTeamEmployeeListIds.size()))
+                .andExpect(jsonPath("$.number").value(DEFAULT_PAGE_NUMBER))
                 .andReturn();
-        List<EmployeeResponseDTO> EmployeeResponseDTOList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
-        List<Long> expectedIds = EmployeeResponseDTOList.stream()
-                .map(EmployeeResponseDTO::getId)
-                .toList();
+        JSONArray contentListJson = JsonPath.read(result.getResponse().getContentAsString(), "$.content");
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<>() {
+        });
+        assertThat(responseTeamEmployeeList).isNotNull();
+        List<Long> expectedIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
         assertThat(expectedIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
         assertThat(expectedIds).containsAll(dBTeamEmployeeListIds);
-
+        //compare between dBTeamEmployeeList and responseTeamEmployeeList
+        assertThat(responseTeamEmployeeList)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                        "grossSalary",
+                        "manager.grossSalary",
+                        "manager.manager.grossSalary"
+                )
+                .isEqualTo(dBEmployeeResponseDTOList);
     }
+
     @Test
     public void getDirectSubordinates_WithNonExistentManager_ReturnsNotFoundStatus() throws Exception {
         mockMvc.perform(
-                        get(EMPLOYEE_API + "/manager/"+NONVALID_ID+"/subordinates")
+                        get(EMPLOYEE_API + "/" + NONVALID_ID + "/subordinates")
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
