@@ -95,7 +95,8 @@ public class EmployeeIntegrationTest {
     private static final BigDecimal GROSS_SALARY = new BigDecimal("5000.00");
     private static final LocalDate DEFAULT_BIRTH_DATE = LocalDate.of(2001, 8, 15);
     private static final LocalDate DEFAULT_GRADUATION_DATE = LocalDate.of(2025, 8, 15);
-
+    private static final int DEFAULT_PAGE_NUMBER = 0;
+    private  static final int DEFAULT_PAGE_SIZE = 6;
     @BeforeEach
     void setUp() {
 
@@ -505,7 +506,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/get_employee_info.xml")
     public void getSalaryInfo_WithNonValidEmployeeId_ReturnsNotFoundStatus() throws Exception {
-        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID+"/salary"))
+        mockMvc.perform(get(EMPLOYEE_API + "/" + NONVALID_ID + "/salary"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_EMPLOYEE_NOT_EXIST))
@@ -540,22 +541,21 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
     public void getEmployeesFromTeam_WithValidTeamName_ReturnOkStatus() throws Exception {
-        int page = 0;
-        int size = 6;
-        Pageable pageable = PageRequest.of(page, size);
 
-        Page<Employee> dBTeamEmployeeList = employeeRepository.findByTeamName(UNIQUE_TEAM_NAME , pageable);
+        Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+
+        Page<Employee> dBTeamEmployeeList = employeeRepository.findByTeamName(UNIQUE_TEAM_NAME, pageable);
         List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
-         //UNIQUE_TEAM_NAME
+        //UNIQUE_TEAM_NAME
         MvcResult result = mockMvc.perform(get(EMPLOYEE_API)
-                .param("teamName", UNIQUE_TEAM_NAME)
-                        .param("page", String.valueOf(page))
-                        .param("size", String.valueOf(size) )
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("teamName", UNIQUE_TEAM_NAME)
+                        .param("page", String.valueOf(DEFAULT_PAGE_NUMBER))
+                        .param("size", String.valueOf(DEFAULT_PAGE_SIZE))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size").value(size))
+                .andExpect(jsonPath("$.size").value(DEFAULT_PAGE_SIZE))
                 .andExpect(jsonPath("$.numberOfElements").value(dBTeamEmployeeListIds.size()))
-                .andExpect(jsonPath("$.number").value(page))
+                .andExpect(jsonPath("$.number").value(DEFAULT_PAGE_NUMBER))
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
@@ -563,17 +563,18 @@ public class EmployeeIntegrationTest {
         List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<List<EmployeeResponseDTO>>() {
         });
         assertThat(responseTeamEmployeeList).isNotNull();
+
         List<Long> responseTeamEmployeeListIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
         assertThat(responseTeamEmployeeListIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
         assertThat(dBTeamEmployeeListIds).containsAll(responseTeamEmployeeListIds);
-
+      
 
     }
 
     @Test
     @DatabaseSetup(value = "/dataset/getEmployeesFromTeam.xml")
     void getEmployeesFromTeam_WithNonValidTeamName_ReturnsOkStatusWithEmptyContent() throws Exception {
-        mockMvc.perform(get(EMPLOYEE_API ).param("teamName" , NONVALID_TEAM_NAME))
+        mockMvc.perform(get(EMPLOYEE_API).param("teamName", NONVALID_TEAM_NAME))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andReturn();

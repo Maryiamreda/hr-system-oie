@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 
@@ -50,7 +49,7 @@ public class EmployeeController {
             @PageableDefault(size = 3) Pageable pageable
     ) {
         Page<EmployeeResponseDTO> teamEmployees = employeeService.getTeamEmployeesResponseList(teamName, pageable);
-        return ResponseEntity.ok(teamEmployees);
+        return new ResponseEntity<>(teamEmployees,HttpStatus.OK);
     }
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(
