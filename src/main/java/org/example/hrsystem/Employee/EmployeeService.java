@@ -84,6 +84,12 @@ public class EmployeeService {
         Page<Employee> employeePage = employeeRepository.findByTeamName(teamName, pageable);
         return employeePage.map(employeeMapper::toResponse);
     }
+    public List<EmployeeResponseDTO> getDirectSubordinates(Long managerId) {
+      Employee manager=  employeeRepository.findById(managerId)
+                .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
+        List<Employee> subs = employeeRepository.findByManager(manager);
+        return subs.stream().map(employeeMapper::toResponse).toList();
+    }
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {
         Employee employee = employeeRepository.findById(employeeId)

@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.List;
+
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 
 
@@ -50,6 +52,13 @@ public class EmployeeController {
     ) {
         Page<EmployeeResponseDTO> teamEmployees = employeeService.getTeamEmployeesResponseList(teamName, pageable);
         return new ResponseEntity<>(teamEmployees,HttpStatus.OK);
+    }
+    @GetMapping("/manager/{managerId}/subordinates")
+    public ResponseEntity<List<EmployeeResponseDTO>> getManagerDirectSubordinates(
+            @PathVariable Long managerId
+    ) {
+        List<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId);
+        return new ResponseEntity<>(subordinates,HttpStatus.OK);
     }
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(

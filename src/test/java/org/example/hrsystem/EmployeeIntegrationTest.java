@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -96,7 +97,8 @@ public class EmployeeIntegrationTest {
     private static final LocalDate DEFAULT_BIRTH_DATE = LocalDate.of(2001, 8, 15);
     private static final LocalDate DEFAULT_GRADUATION_DATE = LocalDate.of(2025, 8, 15);
     private static final int DEFAULT_PAGE_NUMBER = 0;
-    private  static final int DEFAULT_PAGE_SIZE = 6;
+    private static final int DEFAULT_PAGE_SIZE = 6;
+
     @BeforeEach
     void setUp() {
 
@@ -560,14 +562,12 @@ public class EmployeeIntegrationTest {
 
         MockHttpServletResponse response = result.getResponse();
         JSONArray contentListJson = JsonPath.read(response.getContentAsString(), "$.content");
-        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<List<EmployeeResponseDTO>>() {
-        });
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(contentListJson.toJSONString(), new TypeReference<>() {});
         assertThat(responseTeamEmployeeList).isNotNull();
-
         List<Long> responseTeamEmployeeListIds = responseTeamEmployeeList.stream().map(EmployeeResponseDTO::getId).toList();
         assertThat(responseTeamEmployeeListIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
         assertThat(dBTeamEmployeeListIds).containsAll(responseTeamEmployeeListIds);
-      
+
 
     }
 
@@ -578,6 +578,36 @@ public class EmployeeIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andReturn();
+    }
+
+    @Test
+    @DatabaseSetup(value = "/dataset/employeeHierarchy.xml")
+    public void getDirectSubordinates_WithValidManager_ReturnsOkStatusWithDirectSubordinates() throws Exception {
+        Employee manager = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+
+        List<Employee> dBTeamEmployeeList = employeeRepository.findByManager(manager);
+        List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
+
+        MvcResult result = mockMvc.perform(
+                        get(EMPLOYEE_API + "/manager/" + manager.getId() + "/subordinates")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        List<EmployeeResponseDTO> EmployeeResponseDTOList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<Long> expectedIds = EmployeeResponseDTOList.stream()
+                .map(EmployeeResponseDTO::getId)
+                .toList();
+        assertThat(expectedIds.size()).isEqualTo(dBTeamEmployeeListIds.size());
+        assertThat(expectedIds).containsAll(dBTeamEmployeeListIds);
+
+    }
+    @Test
+    public void getDirectSubordinates_WithNonExistentManager_ReturnsNotFoundStatus() throws Exception {
+        mockMvc.perform(
+                        get(EMPLOYEE_API + "/manager/"+NONVALID_ID+"/subordinates")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
     }
 
     @Test
