@@ -29,10 +29,10 @@ public class EmployeeMapper {
         EmployeeResponseDTO employeeResponseDTO = EmployeeResponseDTO.builder().
                 id(employee.getId()).
                 name(employee.getName())
-                .departmentName(employee.getDepartment().getName())
                 .manager(employee.getManager())
                 .expertises(employee.getExpertises())
                 .build();
+        if (employee.getDepartment()!=null) employeeResponseDTO.setDepartmentName(employee.getDepartment().getName());
         if (employee.getTeam() != null) employeeResponseDTO.setTeamName(employee.getTeam().getName());
         return employeeResponseDTO;
     }

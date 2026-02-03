@@ -100,7 +100,7 @@ public class EmployeeIntegrationTest {
     private static final LocalDate DEFAULT_BIRTH_DATE = LocalDate.of(2001, 8, 15);
     private static final LocalDate DEFAULT_GRADUATION_DATE = LocalDate.of(2025, 8, 15);
     private static final int DEFAULT_PAGE_NUMBER = 0;
-    private static final int DEFAULT_PAGE_SIZE = 6;
+    private static final int DEFAULT_PAGE_SIZE = 5;
 
     @BeforeEach
     void setUp() {
@@ -587,7 +587,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/employeeHierarchy.xml")
     public void getDirectSubordinates_WithValidManager_ReturnsOkStatusWithDirectSubordinates() throws Exception {
-        Employee manager = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
         Page<Employee> dBTeamEmployeeList = employeeRepository.findByManager(manager, pageable);
         List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
@@ -632,32 +632,22 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/get-employees-under-manager-recursive.xml")
     public void getRecursiveSubordinatesUnderManger_WithValidManager_ReturnsOkStatusWithRecursiveSubordinates() throws Exception {
-        Employee manager = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
         Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
-        List<Employee> dBTeamEmployeeList = employeeRepository.findRecursiveSubordinates(manager.getId());
-//        List<EmployeeResponseDTO> dBEmployeeResponseDTOList = dBTeamEmployeeList.getContent().stream().map(employeeMapper::toResponse).toList();
-
+        List<Employee> dBTeamEmployeeList = employeeRepository.findRecursiveSubordinates(manager.getId(),pageable);
+        List<EmployeeResponseDTO> dBEmployeeResponseDTOList = dBTeamEmployeeList.stream().map(employeeMapper::toResponse).toList();
         MvcResult result = mockMvc.perform(
                         get(EMPLOYEE_API + "/" + manager.getId() + "/hierarchy")
-//                                .param("page", String.valueOf(DEFAULT_PAGE_NUMBER))
-//                                .param("size", String.valueOf(DEFAULT_PAGE_SIZE))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.size").value(DEFAULT_PAGE_SIZE))
-//                .andExpect(jsonPath("$.numberOfElements").value(dBTeamEmployeeList.size()))
-//                .andExpect(jsonPath("$.number").value(DEFAULT_PAGE_NUMBER))
                 .andReturn();
-//        JSONArray contentListJson = JsonPath.read(, "$.content");
-        List<Employee> responseTeamEmployeeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        List<EmployeeResponseDTO> responseTeamEmployeeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
+
+        assertThat(responseTeamEmployeeList.size()).isEqualTo(DEFAULT_PAGE_SIZE);
         assertThat(responseTeamEmployeeList)
                 .usingRecursiveComparison()
-                .ignoringFields(
-                        "grossSalary",
-                        "manager.grossSalary",
-                        "manager.manager.grossSalary"
-                )
-                .isEqualTo(dBTeamEmployeeList);
+                .isEqualTo(dBEmployeeResponseDTOList);
 
     }
     @Test

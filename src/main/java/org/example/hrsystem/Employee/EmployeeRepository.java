@@ -24,21 +24,31 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                                    @Param("newManager") Employee newManager);
 
     List<Employee> findByManager(Employee managerId);
-    Page<Employee> findByManager(Employee managerId , Pageable pageable);
-    Page<Employee> findByTeamName(String teamName, Pageable pageable);
-    @Query(value = """
-    WITH RECURSIVE subordinates(id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id) AS (
-        SELECT id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id
-        FROM employee
-        WHERE manager_id = :managerId
-        UNION ALL
-        SELECT e.id, e.name, e.gender, e.birth_date, e.graduation_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
-        FROM employee e
-        JOIN subordinates s ON e.manager_id = s.id
-    )
-    SELECT * FROM subordinates
-    """,
-            nativeQuery = true)
 
-    List<Employee> findRecursiveSubordinates(@Param("managerId") Long managerId );
+    Page<Employee> findByManager(Employee managerId, Pageable pageable);
+
+    Page<Employee> findByTeamName(String teamName, Pageable pageable);
+
+    @Query(value = """
+            WITH RECURSIVE subordinates(id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id) AS (
+                SELECT id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id
+                FROM employee WHERE manager_id = :managerId
+                UNION ALL
+                SELECT e.id, e.name, e.gender, e.birth_date, e.graduation_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
+                FROM employee e
+                JOIN subordinates s ON e.manager_id = s.id
+            )
+            SELECT * FROM subordinates
+            """,
+//            countQuery = """
+//                    WITH RECURSIVE subordinates AS (
+//                    SELECT * FROM employee WHERE manager_id = :managerId
+//                    UNION ALL
+//                    SELECT e.* FROM employee e
+//                    INNER JOIN subordinates s ON e.manager_id = s.id
+//                    )
+//                    SELECT COUNT(*) FROM subordinates
+//                    """,
+            nativeQuery = true)
+    List<Employee> findRecursiveSubordinates(@Param("managerId") Long managerId, Pageable pageable);
 }

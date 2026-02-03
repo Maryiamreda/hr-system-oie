@@ -59,26 +59,18 @@ public class EmployeeController {
     @GetMapping("/{managerId}/subordinates")
     public ResponseEntity<Page<EmployeeResponseDTO>> getManagerDirectSubordinates(
             @PathVariable Long managerId,
-            @PageableDefault(size = 3) Pageable pageable
+            @PageableDefault Pageable pageable
     ) {
         Page<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId, pageable);
         return new ResponseEntity<>(subordinates, HttpStatus.OK);
     }
 
-    //    @GetMapping("/{managerId}/hierarchy")
-//    public ResponseEntity<Page<EmployeeResponseDTO>> getManagerRecursiveSubordinates(
-//            @PathVariable Long managerId,
-//            @PageableDefault(size = 3) Pageable pageable
-//    ) {
-//        Page<EmployeeResponseDTO> subordinates = employeeService.getRecursiveSubordinates(managerId,pageable);
-//        return new ResponseEntity<>(subordinates,HttpStatus.OK);
-//    }
     @GetMapping("/{managerId}/hierarchy")
-    public ResponseEntity<List<Employee>> getManagerRecursiveSubordinates(
+    public ResponseEntity<List<EmployeeResponseDTO>> getManagerRecursiveSubordinates(
             @PathVariable Long managerId,
-            @PageableDefault(size = 3) Pageable pageable
+            @PageableDefault Pageable pageable
     ) {
-        List<Employee> subordinates = employeeService.getRecursiveSubordinates(managerId, pageable);
+        List<EmployeeResponseDTO> subordinates = employeeService.getRecursiveSubordinates(managerId, pageable);
         return new ResponseEntity<>(subordinates, HttpStatus.OK);
     }
 

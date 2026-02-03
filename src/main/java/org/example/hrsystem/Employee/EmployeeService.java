@@ -86,24 +86,15 @@ public class EmployeeService {
     public Page<EmployeeResponseDTO> getDirectSubordinates(Long managerId, Pageable pageable) {
         Employee manager = employeeRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
-        Page<Employee> subs = employeeRepository.findByManager(manager, pageable);
-        return subs.map(employeeMapper::toResponse);
+        Page<Employee> directSubordinates = employeeRepository.findByManager(manager, pageable);
+        return directSubordinates.map(employeeMapper::toResponse);
     }
 
-    public List<Employee> getRecursiveSubordinates(Long managerId, Pageable pageable) {
+    public List<EmployeeResponseDTO> getRecursiveSubordinates(Long managerId, Pageable pageable) {
         employeeRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
-//        Queue<Employee> managersQueue = new LinkedList<>();
-//        List<Employee> subordinates = new ArrayList<>();
-//        managersQueue.add(manager);
-//        while (!managersQueue.isEmpty()) {
-//            Employee current = managersQueue.poll();
-//this will require many database calls.
-//            List<Employee> children = employeeRepository.findByManager(current);
-//            subordinates.addAll(children);
-//            managersQueue.addAll(children);
-//        }
-        return employeeRepository.findRecursiveSubordinates(managerId );
+        List<Employee> recursiveSubordinates = employeeRepository.findRecursiveSubordinates(managerId ,pageable);
+        return recursiveSubordinates.stream().map(employeeMapper::toResponse).toList();
 
     }
 
