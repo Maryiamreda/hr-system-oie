@@ -38,6 +38,7 @@ public class EmployeeController {
         EmployeeResponseDTO employee = employeeService.getEmployeeResponseDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
+
     @GetMapping("/{employeeId}/salary")
     public ResponseEntity<EmployeeSalaryInfoDTO> getEmployeeSalaryInfo(
             @PathVariable Long employeeId
@@ -45,35 +46,56 @@ public class EmployeeController {
         EmployeeSalaryInfoDTO employee = employeeService.getEmployeeSalaryInfoDTO(employeeId);
         return new ResponseEntity<>(employee, HttpStatus.OK);
     }
+
     @GetMapping
     public ResponseEntity<Page<EmployeeResponseDTO>> getTeamEmployees(
-            @RequestParam  String teamName,
+            @RequestParam String teamName,
             @PageableDefault(size = 3) Pageable pageable
     ) {
         Page<EmployeeResponseDTO> teamEmployees = employeeService.getTeamEmployeesResponseList(teamName, pageable);
-        return new ResponseEntity<>(teamEmployees,HttpStatus.OK);
+        return new ResponseEntity<>(teamEmployees, HttpStatus.OK);
     }
+
     @GetMapping("/{managerId}/subordinates")
     public ResponseEntity<Page<EmployeeResponseDTO>> getManagerDirectSubordinates(
             @PathVariable Long managerId,
-              @PageableDefault(size = 3) Pageable pageable
+            @PageableDefault(size = 3) Pageable pageable
     ) {
-        Page<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId,pageable);
-        return new ResponseEntity<>(subordinates,HttpStatus.OK);
+        Page<EmployeeResponseDTO> subordinates = employeeService.getDirectSubordinates(managerId, pageable);
+        return new ResponseEntity<>(subordinates, HttpStatus.OK);
     }
+
+    //    @GetMapping("/{managerId}/hierarchy")
+//    public ResponseEntity<Page<EmployeeResponseDTO>> getManagerRecursiveSubordinates(
+//            @PathVariable Long managerId,
+//            @PageableDefault(size = 3) Pageable pageable
+//    ) {
+//        Page<EmployeeResponseDTO> subordinates = employeeService.getRecursiveSubordinates(managerId,pageable);
+//        return new ResponseEntity<>(subordinates,HttpStatus.OK);
+//    }
+    @GetMapping("/{managerId}/hierarchy")
+    public ResponseEntity<List<Employee>> getManagerRecursiveSubordinates(
+            @PathVariable Long managerId,
+            @PageableDefault(size = 3) Pageable pageable
+    ) {
+        List<Employee> subordinates = employeeService.getRecursiveSubordinates(managerId, pageable);
+        return new ResponseEntity<>(subordinates, HttpStatus.OK);
+    }
+
     @PatchMapping(path = "/{employeeId}", consumes = "application/merge-patch+json")
     public ResponseEntity<String> updateEmployee(
             @PathVariable Long employeeId,
             @RequestBody JsonMergePatch patch) throws Exception {
 
         employeeService.updateEmployee(employeeId, patch);
-        return ResponseEntity.ok( SUCCESS_EMPLOYEE_DATA_UPDATED );
+        return ResponseEntity.ok(SUCCESS_EMPLOYEE_DATA_UPDATED);
     }
+
     @DeleteMapping("/{employeeId}")
     public ResponseEntity<String> deleteEmployee(
             @PathVariable Long employeeId
     ) {
-       employeeService.deleteEmployee(employeeId);
-        return ResponseEntity.ok( SUCCESS_EMPLOYEE_DELETED );
+        employeeService.deleteEmployee(employeeId);
+        return ResponseEntity.ok(SUCCESS_EMPLOYEE_DELETED);
     }
 }

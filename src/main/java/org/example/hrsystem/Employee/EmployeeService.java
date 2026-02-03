@@ -24,9 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -84,11 +82,29 @@ public class EmployeeService {
         Page<Employee> employeePage = employeeRepository.findByTeamName(teamName, pageable);
         return employeePage.map(employeeMapper::toResponse);
     }
+
     public Page<EmployeeResponseDTO> getDirectSubordinates(Long managerId, Pageable pageable) {
-      Employee manager=  employeeRepository.findById(managerId)
+        Employee manager = employeeRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
-        Page<Employee> subs = employeeRepository.findByManager(manager,pageable);
+        Page<Employee> subs = employeeRepository.findByManager(manager, pageable);
         return subs.map(employeeMapper::toResponse);
+    }
+
+    public List<Employee> getRecursiveSubordinates(Long managerId, Pageable pageable) {
+        employeeRepository.findById(managerId)
+                .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
+//        Queue<Employee> managersQueue = new LinkedList<>();
+//        List<Employee> subordinates = new ArrayList<>();
+//        managersQueue.add(manager);
+//        while (!managersQueue.isEmpty()) {
+//            Employee current = managersQueue.poll();
+//this will require many database calls.
+//            List<Employee> children = employeeRepository.findByManager(current);
+//            subordinates.addAll(children);
+//            managersQueue.addAll(children);
+//        }
+        return employeeRepository.findRecursiveSubordinates(managerId );
+
     }
 
     public void updateEmployee(Long employeeId, JsonMergePatch patch) throws Exception {

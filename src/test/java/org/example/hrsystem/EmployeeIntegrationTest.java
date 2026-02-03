@@ -47,6 +47,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -619,6 +621,7 @@ public class EmployeeIntegrationTest {
     }
 
     @Test
+    @DatabaseSetup(value = "/dataset/employeeHierarchy.xml")
     public void getDirectSubordinates_WithNonExistentManager_ReturnsNotFoundStatus() throws Exception {
         mockMvc.perform(
                         get(EMPLOYEE_API + "/" + NONVALID_ID + "/subordinates")
@@ -626,7 +629,37 @@ public class EmployeeIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
     }
+    @Test
+    @DatabaseSetup(value = "/dataset/get-employees-under-manager-recursive.xml")
+    public void getRecursiveSubordinatesUnderManger_WithValidManager_ReturnsOkStatusWithRecursiveSubordinates() throws Exception {
+        Employee manager = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+        Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+        List<Employee> dBTeamEmployeeList = employeeRepository.findRecursiveSubordinates(manager.getId());
+//        List<EmployeeResponseDTO> dBEmployeeResponseDTOList = dBTeamEmployeeList.getContent().stream().map(employeeMapper::toResponse).toList();
 
+        MvcResult result = mockMvc.perform(
+                        get(EMPLOYEE_API + "/" + manager.getId() + "/hierarchy")
+//                                .param("page", String.valueOf(DEFAULT_PAGE_NUMBER))
+//                                .param("size", String.valueOf(DEFAULT_PAGE_SIZE))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.size").value(DEFAULT_PAGE_SIZE))
+//                .andExpect(jsonPath("$.numberOfElements").value(dBTeamEmployeeList.size()))
+//                .andExpect(jsonPath("$.number").value(DEFAULT_PAGE_NUMBER))
+                .andReturn();
+//        JSONArray contentListJson = JsonPath.read(, "$.content");
+        List<Employee> responseTeamEmployeeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+        assertThat(responseTeamEmployeeList)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                        "grossSalary",
+                        "manager.grossSalary",
+                        "manager.manager.grossSalary"
+                )
+                .isEqualTo(dBTeamEmployeeList);
+
+    }
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
