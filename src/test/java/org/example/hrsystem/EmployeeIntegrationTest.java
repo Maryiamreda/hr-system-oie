@@ -633,11 +633,20 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/get-employees-under-manager-recursive.xml")
     public void getRecursiveSubordinatesUnderManger_WithValidManager_ReturnsOkStatusWithRecursiveSubordinates() throws Exception {
         Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
-        Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
-        List<Employee> dBTeamEmployeeList = employeeRepository.findRecursiveSubordinates(manager.getId(),pageable);
-        List<EmployeeResponseDTO> dBEmployeeResponseDTOList = dBTeamEmployeeList.stream().map(employeeMapper::toResponse).toList();
+        List<Employee> expectedEmployees = List.of(
+                employeeRepository.findById(2L).orElseThrow(), // MANAGER
+                employeeRepository.findById(3L).orElseThrow(), // UNIQUE_EMPLOYEE_NAME_DELETE
+                employeeRepository.findById(4L).orElseThrow(), // EMPLOYEE_UNDER_MANAGER
+                employeeRepository.findById(5L).orElseThrow(), // EMPLOYEE_5
+                employeeRepository.findById(6L).orElseThrow() // EMPLOYEE_6
+        );
+        List<EmployeeResponseDTO> expectedResponseList = expectedEmployees.stream()
+                .map(employeeMapper::toResponse)
+                .toList();
         MvcResult result = mockMvc.perform(
                         get(EMPLOYEE_API + "/" + manager.getId() + "/hierarchy")
+                                .param("page", String.valueOf(DEFAULT_PAGE_NUMBER))
+                                .param("size", String.valueOf(DEFAULT_PAGE_SIZE))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -647,8 +656,18 @@ public class EmployeeIntegrationTest {
         assertThat(responseTeamEmployeeList.size()).isEqualTo(DEFAULT_PAGE_SIZE);
         assertThat(responseTeamEmployeeList)
                 .usingRecursiveComparison()
-                .isEqualTo(dBEmployeeResponseDTOList);
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedResponseList);
 
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/get-employees-under-manager-recursive.xml")
+    public void getRecursiveSubordinates_WithNonExistentManager_ReturnsNotFoundStatus() throws Exception {
+        mockMvc.perform(
+                        get(EMPLOYEE_API + "/" + NONVALID_ID + "/hierarchy")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(ERROR_MANAGER_NOT_EXIST));
     }
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")

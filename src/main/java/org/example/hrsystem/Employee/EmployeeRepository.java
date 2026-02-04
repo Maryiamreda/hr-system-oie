@@ -40,15 +40,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             )
             SELECT * FROM subordinates
             """,
-//            countQuery = """
-//                    WITH RECURSIVE subordinates AS (
-//                    SELECT * FROM employee WHERE manager_id = :managerId
-//                    UNION ALL
-//                    SELECT e.* FROM employee e
-//                    INNER JOIN subordinates s ON e.manager_id = s.id
-//                    )
-//                    SELECT COUNT(*) FROM subordinates
-//                    """,
             nativeQuery = true)
     List<Employee> findRecursiveSubordinates(@Param("managerId") Long managerId, Pageable pageable);
 }

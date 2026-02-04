@@ -18,7 +18,7 @@ public class EmployeeMapper {
     public Employee toEntity(EmployeeRequestDTO employeeRequestDTO) {
         return Employee.builder()
                 .name(employeeRequestDTO.getName())
-        .birthDate(employeeRequestDTO.getBirthDate())
+                .birthDate(employeeRequestDTO.getBirthDate())
                 .graduationDate(employeeRequestDTO.getGraduationDate())
                 .gender(String.valueOf(employeeRequestDTO.getGender()))
                 .grossSalary(employeeRequestDTO.getGrossSalary())
@@ -32,13 +32,17 @@ public class EmployeeMapper {
                 .manager(employee.getManager())
                 .expertises(employee.getExpertises())
                 .build();
-        if (employee.getDepartment()!=null) employeeResponseDTO.setDepartmentName(employee.getDepartment().getName());
-        if (employee.getTeam() != null) employeeResponseDTO.setTeamName(employee.getTeam().getName());
+        if (employee.getDepartment() != null) {
+            employeeResponseDTO.setDepartmentName(employee.getDepartment().getName());
+        }
+        if (employee.getTeam() != null) {
+            employeeResponseDTO.setTeamName(employee.getTeam().getName());
+        }
         return employeeResponseDTO;
     }
 
     public EmployeeRequestDTO toDto(Employee employee) {
-        EmployeeRequestDTO dto =  EmployeeRequestDTO.builder().
+        EmployeeRequestDTO dto = EmployeeRequestDTO.builder().
                 name(employee.getName())
                 .departmentName(employee.getDepartment().getName())
                 .gender(Gender.valueOf(employee.getGender()))
