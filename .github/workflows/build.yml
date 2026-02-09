@@ -17,5 +17,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Tests
-        run: mvn test
+      - name: Build JAR and run tests
+        run: mvn clean package #build jar and runs tests
+
+      - name: Upload JAR file
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar #tell GitHub which files to include
+
+      - name: Test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+            name: test-reports
+            path: target/surefire-reports/   #maven automatically creates test reports here
+      - name: Run Tests and Lint
+        run: mvn verify
