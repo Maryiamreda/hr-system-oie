@@ -13,7 +13,9 @@ public class SalaryCalculator {
 
     public BigDecimal calculateNetSalary(BigDecimal grossSalary) {
         //gross Salary - (Gross Salary * 0.15) - 500
-        if (grossSalary == null) return BigDecimal.ZERO;
+        if (grossSalary == null) {
+            return BigDecimal.ZERO;
+        }
 
         BigDecimal taxAmount = grossSalary.multiply(TAX_RATE);
         BigDecimal totalDeductions = taxAmount.add(FIXED_DEDUCTION);
