@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: target/site/
+          path: target/site/surefire-report.html
 
       - name: Run Tests and Lint
         run: mvn verify
