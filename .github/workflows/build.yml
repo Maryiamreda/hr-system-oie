@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [ master , build-pipeline ]
 
 jobs:
   test:
@@ -32,8 +31,21 @@ jobs:
         with:
           name: test-reports
           path: target/surefire-reports/   #maven automatically creates test reports here
+
+      - name: Generate HTML report
+        run: mvn surefire-report:report-only
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: target/site/
+
       - name: Run Tests and Lint
         run: mvn verify
+
+      - name: Scan for secrets leaks
+        uses: gitleaks/gitleaks-action@v2
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

@@ -30,7 +30,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Page<Employee> findByTeamName(String teamName, Pageable pageable);
 
     @Query(value = """
-            WITH RECURSIVE subordinates(id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id) AS (
+            WITH RECURSIVE subordinates(id,
+                            name,
+                            gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id) AS (
                 SELECT id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id
                 FROM employee WHERE manager_id = :managerId
                 UNION ALL
