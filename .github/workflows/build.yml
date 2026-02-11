@@ -19,21 +19,14 @@ jobs:
       - name: Build JAR and run tests
         run: mvn clean package #build jar and runs tests
 
+      - name: Generate HTML report
+        run: mvn surefire-report:report-only
+
       - name: Upload JAR file
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
           path: target/*.jar #tell GitHub which files to include
-
-      - name: Test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: target/surefire-reports/   #maven automatically creates test reports here
-
-      - name: Generate HTML report
-        run: mvn surefire-report:report-only
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
