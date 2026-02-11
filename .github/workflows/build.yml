@@ -20,7 +20,7 @@ jobs:
         run: mvn clean package #build jar and runs tests
 
       - name: Generate HTML report
-        run: mvn surefire-report:report
+        run: mvn surefire-report:report-only
         if: always()
 
       - name: Upload JAR file
