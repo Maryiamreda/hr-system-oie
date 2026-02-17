@@ -1,0 +1,8 @@
+scrape_configs:
+  - job_name: 'MyAppMetrics'
+    metrics_path: '/actuator/prometheus' #  HTTP path where Prometheus will scrape metrics
+    scrape_interval: 3s
+    static_configs:
+      - targets: ['172.17.0.1:8080'] #port Prometheus will scrape
+        labels:
+          application: 'My Spring Boot Application' #custom labels added to every metric scraped from this target
