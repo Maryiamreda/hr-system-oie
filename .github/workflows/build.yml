@@ -38,6 +38,7 @@ jobs:
 
       - name: Generate PMD HTML report
         run: mvn pmd:pmd site
+        if: always()
 
       - name: Upload PMD HTML report
         uses: actions/upload-artifact@v4
@@ -45,7 +46,6 @@ jobs:
           name: pmd-html-report
           path: target/site/pmd.html
           if: always()
-
       - name: Run Tests and Lint
         run: mvn verify
 
