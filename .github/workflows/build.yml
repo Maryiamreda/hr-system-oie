@@ -44,7 +44,7 @@ jobs:
         with:
           name: pmd-html-report
           path: target/site/pmd.html
-
+          if: always()
 
       - name: Run Tests and Lint
         run: mvn verify
