@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  prometheus:
+  prmth:
     build: ./prometheus
     ports:
-      - "9090:9090"
+      - "9292:8080"
 
   grafana:
     build: ./grafana
