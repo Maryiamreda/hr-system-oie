@@ -65,7 +65,7 @@ jobs:
     name: Semantic Release
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'master'
 
     steps:
       - name: Checkout code
