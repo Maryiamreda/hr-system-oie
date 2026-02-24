@@ -65,7 +65,7 @@ jobs:
     name: Semantic Release
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref_name == 'master'
+    if: github.ref_name == 'fix/semantic-release-node-version'
 
     steps:
       - name: Checkout code
@@ -76,7 +76,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install semantic-release
         run: npm ci
