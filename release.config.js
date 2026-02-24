@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ["fix/semantic-release-node-version"],  //the main branch only will trigger releases
+  branches: ["master"],  //the main branch only will trigger releases
   plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
