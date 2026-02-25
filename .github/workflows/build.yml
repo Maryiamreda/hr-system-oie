@@ -66,6 +66,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref_name == 'master'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
