@@ -10,11 +10,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByName(String uuidName);
-
+    Optional<Employee> findByNationalId(String nationalId);
     List<Employee> findByDepartmentName(String uniqueDepartmentName);
 
     @Transactional
@@ -44,4 +45,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             """,
             nativeQuery = true)
     List<Employee> findRecursiveSubordinates(@Param("managerId") Long managerId, Pageable pageable);
+
+
 }

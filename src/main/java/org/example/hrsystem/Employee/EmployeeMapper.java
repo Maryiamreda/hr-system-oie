@@ -10,15 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 public class EmployeeMapper {
-    @Autowired
-    private ExpertiseRepository expertiseRepository;
 
     public Employee toEntity(EmployeeRequestDTO employeeRequestDTO) {
         return Employee.builder()
                 .name(employeeRequestDTO.getName())
+                .firstName(employeeRequestDTO.getFirstName())
+                .lastName(employeeRequestDTO.getLastName())
                 .birthDate(employeeRequestDTO.getBirthDate())
+                .nationalId(employeeRequestDTO.getNationalId())
+                .hireDate(LocalDate.now())
+                .degree(employeeRequestDTO.getDegree())
                 .graduationDate(employeeRequestDTO.getGraduationDate())
                 .gender(String.valueOf(employeeRequestDTO.getGender()))
                 .grossSalary(employeeRequestDTO.getGrossSalary())
