@@ -4,9 +4,7 @@ package org.example.hrsystem.Employee;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Expertise.Expertise;
-import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.enums.Gender;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
 
