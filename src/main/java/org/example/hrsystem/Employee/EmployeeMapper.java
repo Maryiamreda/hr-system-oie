@@ -56,7 +56,7 @@ public class EmployeeMapper {
                 .grossSalary(employee.getGrossSalary())
                 .build();
         if (employee.getManager() != null) {
-            dto.setManagerId(employee.getManager().getId());
+            dto.setManagerNationalId(employee.getManager().getNationalId());
         }
         if (employee.getDepartment() != null) {
             dto.setDepartmentName(employee.getDepartment().getName());

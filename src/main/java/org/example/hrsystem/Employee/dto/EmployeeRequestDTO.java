@@ -39,5 +39,5 @@ public class EmployeeRequestDTO {
     private BigDecimal grossSalary;
     private List<String> expertise;
     @NotNull(message = ERROR_MANAGER_NAME_EMPTY)
-    private Long managerId;
+    private String managerNationalId;
 }

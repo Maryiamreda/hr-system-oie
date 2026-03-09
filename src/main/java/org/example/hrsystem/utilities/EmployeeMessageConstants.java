@@ -17,7 +17,7 @@ public class EmployeeMessageConstants {
     public static final String ERROR_EXPERT_NOT_EXIST = "Expert Doesn't Exist";
     public static final String ERROR_EMPLOYEE_NOT_EXIST = "Employee Doesn't Exist";
     public static final String ERROR_DELETING_EXECUTIVE_EMPLOYEE = "Cannot Delete Executive Manager";
-
+ public static final String ERROR_NATIONAL_ID_EXISTS="National ID already exists";
     public static final String SUCCESS_EMPLOYEE_DATA_UPDATED = "Employee's Data Updated Successfully";
     public static final String SUCCESS_EMPLOYEE_DELETED = "Employee's Records Deleted Successfully";
 

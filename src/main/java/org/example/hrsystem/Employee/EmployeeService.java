@@ -47,7 +47,10 @@ public class EmployeeService {
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
-        employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerId()));
+        if (employeeRepository.existsByNationalId(employeeRequestDTO.getNationalId())) {
+            throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
+        }
+        employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerNationalId()));
         employee.setDepartment(getDepartmentOrThrow(employeeRequestDTO.getDepartmentName()));
         if (employeeRequestDTO.getTeamName() != null) {
             employee.setTeam(getTeamOrThrow(employeeRequestDTO.getTeamName()));
@@ -55,6 +58,7 @@ public class EmployeeService {
         if (employeeRequestDTO.getExpertise() != null) {
             employee.setExpertises(getExpertiseOrThrow(employeeRequestDTO.getExpertise()));
         }
+
         Employee newEmployee = employeeRepository.save(employee);
         return employeeMapper.toResponse(newEmployee);
     }
@@ -91,7 +95,7 @@ public class EmployeeService {
     public List<EmployeeResponseDTO> getRecursiveSubordinates(Long managerId, Pageable pageable) {
         employeeRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
-        List<Employee> recursiveSubordinates = employeeRepository.findRecursiveSubordinates(managerId ,pageable);
+        List<Employee> recursiveSubordinates = employeeRepository.findRecursiveSubordinates(managerId, pageable);
         return recursiveSubordinates.stream().map(employeeMapper::toResponse).toList();
 
     }
@@ -113,8 +117,8 @@ public class EmployeeService {
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());
         }
-        if (!Objects.equals(patchedDto.getManagerId(), employee.getManager().getId())) {
-            employee.setManager(getManagerOrThrow(patchedDto.getManagerId()));
+        if (!Objects.equals(patchedDto.getManagerNationalId(), employee.getManager().getId())) {
+            employee.setManager(getManagerOrThrow(patchedDto.getManagerNationalId()));
         }
 
         if (!Objects.equals(patchedDto.getDepartmentName(), employee.getDepartment().getName())) {
@@ -152,12 +156,12 @@ public class EmployeeService {
 
     //private helper methods
     //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND RETURN THE DATA IF ITS VALID
-    private Employee getManagerOrThrow(Long managerId) {
-        if (managerId == null) {
+    private Employee getManagerOrThrow(String managerNationalId) {
+        if (managerNationalId == null) {
             throw new BadRequestException(ERROR_MANAGER_NAME_EMPTY);
         }
 
-        return employeeRepository.findById(managerId).orElseThrow(
+        return employeeRepository.findByNationalId(managerNationalId).orElseThrow(
                 () -> new BadRequestException(ERROR_MANAGER_NOT_EXIST));
     }
 

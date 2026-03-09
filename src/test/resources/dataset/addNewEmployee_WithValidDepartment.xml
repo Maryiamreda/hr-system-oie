@@ -12,6 +12,92 @@
             national_id="ROOT_MANAGER-ID-111111111"
             degree="FRESH"
             hire_date="2015-01-01"
+            department_id="10"
+            team_id="10"
             gross_salary="5000.00"/>
+    <employee_expertise
+            employee_id="1"
+            expertise_id="10"/>
+
+    <employee_expertise
+            employee_id="1"
+            expertise_id="20"/>
+    <employee
+            id="2"
+            name="MANAGER"
+            first_name="MAIN"
+            last_name="MANAGER"
+            national_id="MANAGER-ID-222222222"
+            degree="SENIOR"
+            hire_date="2018-03-10"
+            department_id="10"
+            team_id="10"
+            manager_id="1"
+            gross_salary="5000.00"/>
+
+    <employee
+            id="3"
+            name="UNIQUE_EMPLOYEE_NAME_DELETE"
+            first_name="DELETE"
+            last_name="EMPLOYEE"
+            national_id="EMPLOYEE-ID-333333333"
+            degree="FRESH"
+            hire_date="2025-09-01"
+            department_id="10"
+            team_id="10"
+            manager_id="2"
+            gender="FEMALE"
+            birth_date="2001-08-15"
+            graduation_date="2025-08-15"
+            gross_salary="5000.00"/>
+
+    <employee
+            id="4"
+            name="EMPLOYEE_UNDER_MANAGER"
+            first_name="UNDER"
+            last_name="MANAGER"
+            national_id="EMPLOYEE-ID-444444444"
+            degree="FRESH"
+            hire_date="2025-09-01"
+            department_id="10"
+            team_id="10"
+            manager_id="2"
+            gender="FEMALE"
+            birth_date="2001-08-15"
+            graduation_date="2025-08-15"
+            gross_salary="5000.00"/>
+
+    <employee
+            id="5"
+            name="EMPLOYEE_5"
+            first_name="EMPLOYEE"
+            last_name="FIVE"
+            national_id="EMPLOYEE-ID-555555555"
+            degree="FRESH"
+            hire_date="2024-05-10"
+            department_id="10"
+            team_id="10"
+            manager_id="1"
+            gender="FEMALE"
+            birth_date="2001-08-15"
+            graduation_date="2025-08-15"
+            gross_salary="5000.00"/>
+
+    <employee
+            id="6"
+            name="EMPLOYEE_6"
+            first_name="EMPLOYEE"
+            last_name="SIX"
+            national_id="EMPLOYEE-ID-666666666"
+            degree="FRESH"
+            hire_date="2024-06-15"
+            department_id="10"
+            team_id="10"
+            manager_id="1"
+            gender="FEMALE"
+            birth_date="2001-08-15"
+            graduation_date="2025-08-15"
+            gross_salary="5000.00"/>
+
 </dataset>
 
