@@ -50,7 +50,7 @@ public class EmployeeService {
         if (employeeRepository.existsByNationalId(employeeRequestDTO.getNationalId())) {
             throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
         }
-        employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerNationalId()));
+        employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerId()));
         employee.setDepartment(getDepartmentOrThrow(employeeRequestDTO.getDepartmentName()));
         if (employeeRequestDTO.getTeamName() != null) {
             employee.setTeam(getTeamOrThrow(employeeRequestDTO.getTeamName()));
@@ -114,7 +114,7 @@ public class EmployeeService {
         if (patchedDto.getLastName() != null && patchedDto.getLastName().length() > 2) {
             employee.setLastName(patchedDto.getLastName());
         }
-        if (patchedDto.getNationalId() != null ) {
+        if (patchedDto.getNationalId() != null  && !patchedDto.getNationalId().equals(employee.getNationalId()) ) {
             if (employeeRepository.existsByNationalId(patchedDto.getNationalId())) {
                 throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
             }
@@ -127,8 +127,8 @@ public class EmployeeService {
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());
         }
-        if (!Objects.equals(patchedDto.getManagerNationalId(), employee.getManager().getNationalId())) {
-            employee.setManager(getManagerOrThrow(patchedDto.getManagerNationalId()));
+        if (!Objects.equals(patchedDto.getManagerId(), employee.getManager().getId())) {
+            employee.setManager(getManagerOrThrow(patchedDto.getManagerId()));
         }
 
         if (!Objects.equals(patchedDto.getDepartmentName(), employee.getDepartment().getName())) {
@@ -166,12 +166,12 @@ public class EmployeeService {
 
     //private helper methods
     //METHOD TO CHECK THE EXISTENCE OF AN ELEMENT AND RETURN THE DATA IF ITS VALID
-    private Employee getManagerOrThrow(String managerNationalId) {
-        if (managerNationalId == null) {
+    private Employee getManagerOrThrow(Long managerId) {
+        if (managerId == null) {
             throw new BadRequestException(ERROR_MANAGER_NAME_EMPTY);
         }
 
-        return employeeRepository.findByNationalId(managerNationalId).orElseThrow(
+        return employeeRepository.findById(managerId).orElseThrow(
                 () -> new BadRequestException(ERROR_MANAGER_NOT_EXIST));
     }
 

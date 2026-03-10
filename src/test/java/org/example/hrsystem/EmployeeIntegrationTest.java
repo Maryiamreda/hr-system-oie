@@ -109,6 +109,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithAccurateData_ReturnsCreatedStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
@@ -121,7 +122,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,6 +143,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNullFirstAndLastName_ReturnsBadRequestStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
                 .firstName(null)
@@ -152,7 +154,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,6 +170,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNegativeSalary_ReturnsBadRequestStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
                 .firstName(EMPLOYEE_NAME)
@@ -176,7 +179,7 @@ public class EmployeeIntegrationTest {
                 .gender(Gender.FEMALE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(new BigDecimal("-123.45"))
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -189,7 +192,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithValidDepartment_ReturnsCreatedStatus() throws Exception {
-
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
@@ -199,7 +202,7 @@ public class EmployeeIntegrationTest {
                 .gender(Gender.FEMALE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         //send post request with the object
         mockMvc.perform(post(EMPLOYEE_API)
@@ -218,7 +221,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
-
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
                 .firstName(EMPLOYEE_NAME)
@@ -229,7 +232,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(null)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +247,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithNonUniqueNationalId_ReturnsConflictStatus() throws Exception {
-
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
                 .firstName(EMPLOYEE_NAME)
@@ -255,7 +258,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -269,8 +272,8 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNonValidDepartmentName_ReturnsBadRequestStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -279,7 +282,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(NON_EXISTENCE_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -293,9 +296,9 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
     void addNewEmployee_WithValidExpertise_ReturnsCreatedStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         List<String> expertises = List.of("OOP");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -305,7 +308,7 @@ public class EmployeeIntegrationTest {
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
                 .expertise(expertises)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -322,10 +325,9 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithMultipleExpertises_ReturnsCreatedStatus() throws Exception {
-
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         List<String> expertises = List.of("OOP", "Java");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -334,7 +336,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .expertise(expertises)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
@@ -353,9 +355,9 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void addNewEmployee_WithNonValidExpertise_ReturnsBadRequestStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         List<String> expertises = List.of("non existence expertise ");
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -365,7 +367,7 @@ public class EmployeeIntegrationTest {
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
                 .expertise(expertises)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -377,9 +379,9 @@ public class EmployeeIntegrationTest {
 
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml", type = DatabaseOperation.CLEAN_INSERT)
-    public void addNewEmployee_WithManagerNationalId_ReturnsCreatedStatus() throws Exception {
+    public void addNewEmployee_WithManagerId_ReturnsCreatedStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -388,7 +390,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -399,7 +401,7 @@ public class EmployeeIntegrationTest {
         Optional<Employee> dbEmployee = employeeRepository.findByNationalId(EMPLOYEE_NATIONAL_ID);
         assertThat(dbEmployee).isPresent();
         Employee actualEmployee = dbEmployee.get();
-        assertThat(actualEmployee.getManager().getNationalId()).isEqualTo(inputEmployee.getManagerNationalId());
+        assertThat(actualEmployee.getManager().getNationalId()).isEqualTo(manager.getNationalId());
     }
 
     @Test
@@ -415,7 +417,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId("NONVALID_ID")
+                .managerId(NONVALID_ID)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -438,7 +440,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(null)
+                .managerId(null)
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -452,6 +454,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithValidTeam_ReturnsCreatedStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
@@ -464,7 +467,7 @@ public class EmployeeIntegrationTest {
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .teamName(UNIQUE_TEAM_NAME)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         //send post request with the object
         mockMvc.perform(post(EMPLOYEE_API)
@@ -482,6 +485,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         String inValidIdTeamName = "NON EXISTENCE NAME ";
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
 
@@ -494,7 +498,7 @@ public class EmployeeIntegrationTest {
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .teamName(inValidIdTeamName)
                 .grossSalary(GROSS_SALARY)
-                .managerNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID)
+                .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -711,6 +715,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
+        Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
 
         String updatedName = "unique-updated-employee";
         BigDecimal updatedSalary = new BigDecimal("7000.00");
@@ -722,7 +727,7 @@ public class EmployeeIntegrationTest {
         bodyMap.put("departmentName", UNIQUE_DEPARTMENT_NAME);
         bodyMap.put("teamName", UNIQUE_TEAM_NAME);
         bodyMap.put("degree", Degree.INTERMEDIATE);
-        bodyMap.put("managerNationalId", EMPLOYEE_ROOT_MANAGER_NATIONAL_ID);
+        bodyMap.put("managerId", manager.getId());
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -740,7 +745,6 @@ public class EmployeeIntegrationTest {
         assertThat(actualEmployee.getFirstName()).isEqualTo(updatedName);
         assertThat(actualEmployee.getNationalId()).isEqualTo(uniqueNationalId);
         assertThat(actualEmployee.getDegree()).isEqualTo(Degree.INTERMEDIATE);
-        assertThat(actualEmployee.getManager().getNationalId()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID);
         assertThat(actualEmployee.getManager().getFirstName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
         assertThat(actualEmployee.getDepartment().getName()).isEqualTo(UNIQUE_DEPARTMENT_NAME);
@@ -776,7 +780,7 @@ public class EmployeeIntegrationTest {
     public void updateEmployee_WithNonValidManagerId_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("managerNationalId", NONVALID_ID);
+        bodyMap.put("managerId", NONVALID_ID);
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .contentType("application/merge-patch+json")
@@ -918,7 +922,7 @@ public class EmployeeIntegrationTest {
     void updateEmployee_WithNullManager_ReturnsBadRequestStatus() throws Exception {
         Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("managerNationalId", null);
+        bodyMap.put("managerId", null);
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
