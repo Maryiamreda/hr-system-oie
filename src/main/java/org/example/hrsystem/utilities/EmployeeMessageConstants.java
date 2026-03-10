@@ -22,4 +22,7 @@ public class EmployeeMessageConstants {
     public static final String SUCCESS_EMPLOYEE_DELETED = "Employee's Records Deleted Successfully";
 
     public static final String ERROR_EMPLOYEE_NATIONAL_ID_EMPTY = "National ID cannot be empty";
+    public static final String ERROR_SALARY_EMPTY = "Salary cannot be empty";
+    public static final String EMPLOYEE_NAME_MIN_LENGTH = "Employee name cannot be less letters than 3";
+
 }

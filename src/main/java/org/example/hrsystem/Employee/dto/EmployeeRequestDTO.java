@@ -18,7 +18,7 @@ import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 @NoArgsConstructor
 public class EmployeeRequestDTO {
     @NotNull(message = ERROR_EMPLOYEE_NAME_EMPTY)
-    @Size(min = 2, message = "Employee name cannot be less letters than 3 ")
+    @Size(min = 2, message = EMPLOYEE_NAME_MIN_LENGTH )
     private String name;
     @NotNull(message = ERROR_EMPLOYEE_FIRST_NAME_EMPTY)
     private String firstName;
@@ -33,7 +33,7 @@ public class EmployeeRequestDTO {
     @NotNull(message = ERROR_DEPARTMENT_NAME_EMPTY)
     private String departmentName;
     private String teamName;
-    @NotNull(message = "Salary cannot be empty")
+    @NotNull(message = ERROR_SALARY_EMPTY)
     @Positive(message = ERROR_SALARY_POSITIVE)
     private BigDecimal grossSalary;
     private List<String> expertise;
