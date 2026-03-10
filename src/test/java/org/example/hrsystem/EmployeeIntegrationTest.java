@@ -112,7 +112,6 @@ public class EmployeeIntegrationTest {
         Employee manager=employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
-
                 .firstName(EMPLOYEE_NAME)
                 .lastName(EMPLOYEE_LAST_NAME)
                 .nationalId(EMPLOYEE_NATIONAL_ID)
@@ -122,7 +121,7 @@ public class EmployeeIntegrationTest {
                 .graduationDate(DEFAULT_GRADUATION_DATE)
                 .departmentName(UNIQUE_DEPARTMENT_NAME)
                 .grossSalary(GROSS_SALARY)
-                .yearsOfExperience(1)
+                .yearsOfExperience(DEFAULT_GRADUATION_DATE)
                 .managerId(manager.getId())
                 .build();
         mockMvc.perform(post(EMPLOYEE_API)
@@ -730,7 +729,7 @@ public class EmployeeIntegrationTest {
         bodyMap.put("teamName", UNIQUE_TEAM_NAME);
         bodyMap.put("degree", Degree.INTERMEDIATE);
         bodyMap.put("managerId", manager.getId());
-        bodyMap.put("yearsOfExperience", 4);
+        bodyMap.put("yearsOfExperience", DEFAULT_GRADUATION_DATE);
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .contentType("application/merge-patch+json")
@@ -746,7 +745,7 @@ public class EmployeeIntegrationTest {
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getFirstName()).isEqualTo(updatedName);
         assertThat(actualEmployee.getNationalId()).isEqualTo(uniqueNationalId);
-        assertThat(actualEmployee.getYearsOfExperience()).isEqualTo(4);
+        assertThat(actualEmployee.getYearsOfExperience()).isEqualTo(DEFAULT_GRADUATION_DATE);
         assertThat(actualEmployee.getDegree()).isEqualTo(Degree.INTERMEDIATE);
         assertThat(actualEmployee.getManager().getFirstName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
