@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/Maryiamreda/hr-system-oie/compare/v1.0.0...v1.1.0) (2026-03-10)
+
+
+### Bug Fixes
+
+* modify the add new employee api test for the new db changes ([50c23c2](https://github.com/Maryiamreda/hr-system-oie/commit/50c23c28734d4142eb269ecea90111bd2095281b))
+* use unique findByNationalId instead of find by name ([f44c172](https://github.com/Maryiamreda/hr-system-oie/commit/f44c172d3bd63739d320c97b05bcb59b4eaddffd))
+
+
+### Features
+
+* add new employee attributes and migrate existing data ([1f0e071](https://github.com/Maryiamreda/hr-system-oie/commit/1f0e07172fa20a77b87c066dbc6fda80889b7523))
+* Add Years Of Experience field to Employee entity ([18a5dbf](https://github.com/Maryiamreda/hr-system-oie/commit/18a5dbf275cd6c3b149c4ba79213677fb1391367))
+
 # 1.0.0 (2026-02-25)
 
 
