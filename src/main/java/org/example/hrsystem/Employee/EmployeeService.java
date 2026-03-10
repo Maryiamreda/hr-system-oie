@@ -47,6 +47,9 @@ public class EmployeeService {
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
+        if (employeeRepository.existsByNationalId(employeeRequestDTO.getNationalId())) {
+            throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
+        }
         employee.setManager(getManagerOrThrow(employeeRequestDTO.getManagerId()));
         employee.setDepartment(getDepartmentOrThrow(employeeRequestDTO.getDepartmentName()));
         if (employeeRequestDTO.getTeamName() != null) {
@@ -55,6 +58,7 @@ public class EmployeeService {
         if (employeeRequestDTO.getExpertise() != null) {
             employee.setExpertises(getExpertiseOrThrow(employeeRequestDTO.getExpertise()));
         }
+
         Employee newEmployee = employeeRepository.save(employee);
         return employeeMapper.toResponse(newEmployee);
     }
@@ -91,7 +95,7 @@ public class EmployeeService {
     public List<EmployeeResponseDTO> getRecursiveSubordinates(Long managerId, Pageable pageable) {
         employeeRepository.findById(managerId)
                 .orElseThrow(() -> new NotFoundException(ERROR_MANAGER_NOT_EXIST));
-        List<Employee> recursiveSubordinates = employeeRepository.findRecursiveSubordinates(managerId ,pageable);
+        List<Employee> recursiveSubordinates = employeeRepository.findRecursiveSubordinates(managerId, pageable);
         return recursiveSubordinates.stream().map(employeeMapper::toResponse).toList();
 
     }
@@ -104,11 +108,22 @@ public class EmployeeService {
         JsonNode dtoNode = objectMapper.convertValue(currentDto, JsonNode.class);
         JsonNode patchedNode = patch.apply(dtoNode);
         EmployeeRequestDTO patchedDto = objectMapper.treeToValue(patchedNode, EmployeeRequestDTO.class);
-        if (patchedDto.getName() != null && patchedDto.getName().length() > 2) {
-            employee.setName(patchedDto.getName());
+        if (patchedDto.getFirstName() != null && patchedDto.getFirstName().length() > 2) {
+            employee.setFirstName(patchedDto.getFirstName());
+        }
+        if (patchedDto.getLastName() != null && patchedDto.getLastName().length() > 2) {
+            employee.setLastName(patchedDto.getLastName());
+        }
+        if (patchedDto.getNationalId() != null  && !patchedDto.getNationalId().equals(employee.getNationalId()) ) {
+            if (employeeRepository.existsByNationalId(patchedDto.getNationalId())) {
+                throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
+            }
+            employee.setNationalId(patchedDto.getNationalId());
         }
         employee.setGender(patchedDto.getGender() == null ? null : String.valueOf(patchedDto.getGender()));
+        employee.setDegree(patchedDto.getDegree());
         employee.setBirthDate(patchedDto.getBirthDate());
+        employee.setYearsOfExperience(patchedDto.getYearsOfExperience());
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());

@@ -5,6 +5,7 @@ import lombok.*;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Team.Team;
+import org.example.hrsystem.enums.Degree;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,10 +23,21 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
     private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
+    @Column(name="years_experience")
+    private LocalDate yearsOfExperience;
+    @Column(name = "national_id", unique = true)
+    private String nationalId;
+    @Column(name = "hire_date")
+    private LocalDate hireDate;
+    @Enumerated(EnumType.STRING)
+    private Degree degree;
     @Column(name = "gross_salary", precision = 12, scale = 2)
     private BigDecimal grossSalary;
     @ManyToMany(fetch = FetchType.EAGER)

@@ -4,21 +4,24 @@ package org.example.hrsystem.Employee;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Expertise.Expertise;
-import org.example.hrsystem.Expertise.ExpertiseRepository;
 import org.example.hrsystem.enums.Gender;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 public class EmployeeMapper {
-    @Autowired
-    private ExpertiseRepository expertiseRepository;
 
     public Employee toEntity(EmployeeRequestDTO employeeRequestDTO) {
         return Employee.builder()
-                .name(employeeRequestDTO.getName())
+                .firstName(employeeRequestDTO.getFirstName())
+                .lastName(employeeRequestDTO.getLastName())
                 .birthDate(employeeRequestDTO.getBirthDate())
+                .nationalId(employeeRequestDTO.getNationalId())
+                .yearsOfExperience(employeeRequestDTO.getYearsOfExperience())
+                .hireDate(LocalDate.now())
+                .degree(employeeRequestDTO.getDegree())
                 .graduationDate(employeeRequestDTO.getGraduationDate())
                 .gender(String.valueOf(employeeRequestDTO.getGender()))
                 .grossSalary(employeeRequestDTO.getGrossSalary())
@@ -28,7 +31,7 @@ public class EmployeeMapper {
     public EmployeeResponseDTO toResponse(Employee employee) {
         EmployeeResponseDTO employeeResponseDTO = EmployeeResponseDTO.builder().
                 id(employee.getId()).
-                name(employee.getName())
+                firstName(employee.getFirstName())
                 .manager(employee.getManager())
                 .expertises(employee.getExpertises())
                 .build();
@@ -43,11 +46,15 @@ public class EmployeeMapper {
 
     public EmployeeRequestDTO toDto(Employee employee) {
         EmployeeRequestDTO dto = EmployeeRequestDTO.builder().
-                name(employee.getName())
+                 firstName(employee.getFirstName())
+                .lastName(employee.getLastName())
+                .nationalId(employee.getNationalId())
+                .degree(employee.getDegree())
                 .departmentName(employee.getDepartment().getName())
                 .gender(Gender.valueOf(employee.getGender()))
                 .birthDate(employee.getBirthDate())
                 .graduationDate(employee.getGraduationDate())
+                .yearsOfExperience(employee.getYearsOfExperience())
                 .grossSalary(employee.getGrossSalary())
                 .build();
         if (employee.getManager() != null) {

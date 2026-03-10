@@ -1,0 +1,1 @@
+alter table employee ADD COLUMN years_experience DATE default CURRENT_DATE;

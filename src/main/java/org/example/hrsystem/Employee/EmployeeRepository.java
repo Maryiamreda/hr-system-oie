@@ -10,12 +10,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    List<Employee> findByName(String uuidName);
-
-    List<Employee> findByDepartmentName(String uniqueDepartmentName);
+    List<Employee> findByFirstName(String uuidName);
+    Optional<Employee> findByNationalId(String nationalId);
 
     @Transactional
     @Modifying(clearAutomatically = true)
@@ -31,12 +31,24 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query(value = """
             WITH RECURSIVE subordinates(id,
-                            name,
-                            gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id) AS (
-                SELECT id, name, gender, birth_date, graduation_date, gross_salary, manager_id, department_id, team_id
+                            gender,
+                            first_name,
+                            last_name,
+                            national_id,
+                            degree,
+                            birth_date,
+                            graduation_date,
+                            years_experience,
+                            hire_date,
+                            gross_salary, manager_id, department_id, team_id) AS (
+                SELECT id, gender, first_name, last_name,national_id, degree, birth_date, graduation_date,years_experience,hire_date, gross_salary, manager_id, department_id, team_id
                 FROM employee WHERE manager_id = :managerId
                 UNION ALL
-                SELECT e.id, e.name, e.gender, e.birth_date, e.graduation_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
+                SELECT e.id,
+                       e.first_name,
+                       e.last_name,
+                       e.national_id,   e.degree, e.gender, e.birth_date, e.graduation_date,
+                       e.years_experience, e.hire_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
                 FROM employee e
                 JOIN subordinates s ON e.manager_id = s.id
             )
@@ -44,4 +56,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             """,
             nativeQuery = true)
     List<Employee> findRecursiveSubordinates(@Param("managerId") Long managerId, Pageable pageable);
+
+
+    boolean existsByNationalId( String nationalId);
 }
