@@ -108,14 +108,26 @@ public class EmployeeService {
         JsonNode dtoNode = objectMapper.convertValue(currentDto, JsonNode.class);
         JsonNode patchedNode = patch.apply(dtoNode);
         EmployeeRequestDTO patchedDto = objectMapper.treeToValue(patchedNode, EmployeeRequestDTO.class);
-
+        if (patchedDto.getFirstName() != null && patchedDto.getFirstName().length() > 2) {
+            employee.setFirstName(patchedDto.getFirstName());
+        }
+        if (patchedDto.getLastName() != null && patchedDto.getLastName().length() > 2) {
+            employee.setLastName(patchedDto.getLastName());
+        }
+        if (patchedDto.getNationalId() != null ) {
+            if (employeeRepository.existsByNationalId(patchedDto.getNationalId())) {
+                throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
+            }
+            employee.setNationalId(patchedDto.getNationalId());
+        }
         employee.setGender(patchedDto.getGender() == null ? null : String.valueOf(patchedDto.getGender()));
+        employee.setDegree(patchedDto.getDegree() == null ? null :patchedDto.getDegree());
         employee.setBirthDate(patchedDto.getBirthDate());
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());
         }
-        if (!Objects.equals(patchedDto.getManagerNationalId(), employee.getManager().getId())) {
+        if (!Objects.equals(patchedDto.getManagerNationalId(), employee.getManager().getNationalId())) {
             employee.setManager(getManagerOrThrow(patchedDto.getManagerNationalId()));
         }
 

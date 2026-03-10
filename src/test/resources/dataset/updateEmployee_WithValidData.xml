@@ -14,7 +14,7 @@
               team_id="10"
               gross_salary="5000.00"/>
     <employee id="2"
-              first_name="EMPLOYEE"
+              first_name="ROOT_MANAGER"
               last_name="TWO"
               hire_date="2018-01-01"
               national_id="ROOT_MANAGER-ID-111111111"
@@ -24,7 +24,7 @@
               last_name="ONE"
               hire_date="2018-01-01"
               national_id="EMPLOYEE-ID-666626666"
-              department_id="10"  team_id="10" manager_id="2" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
+              department_id="10"  team_id="10" manager_id="4" gender="FEMALE" birth_date="2001-08-15" graduation_date="2025-08-15"  gross_salary="5000.00"/>
 
 
 

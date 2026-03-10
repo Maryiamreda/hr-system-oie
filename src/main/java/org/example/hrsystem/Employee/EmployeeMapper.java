@@ -47,6 +47,8 @@ public class EmployeeMapper {
         EmployeeRequestDTO dto = EmployeeRequestDTO.builder().
                  firstName(employee.getFirstName())
                 .lastName(employee.getLastName())
+                .nationalId(employee.getNationalId())
+                .degree(employee.getDegree())
                 .departmentName(employee.getDepartment().getName())
                 .gender(Gender.valueOf(employee.getGender()))
                 .birthDate(employee.getBirthDate())

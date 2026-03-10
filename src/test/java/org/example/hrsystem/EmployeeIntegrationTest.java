@@ -714,13 +714,14 @@ public class EmployeeIntegrationTest {
 
         String updatedName = "unique-updated-employee";
         BigDecimal updatedSalary = new BigDecimal("7000.00");
-        String uniqueNationalId=UUID.randomUUID().toString();
+        String uniqueNationalId = UUID.randomUUID().toString();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("firstName", updatedName);
         bodyMap.put("nationalId", uniqueNationalId);
         bodyMap.put("grossSalary", updatedSalary);
         bodyMap.put("departmentName", UNIQUE_DEPARTMENT_NAME);
         bodyMap.put("teamName", UNIQUE_TEAM_NAME);
+        bodyMap.put("degree", Degree.INTERMEDIATE);
         bodyMap.put("managerNationalId", EMPLOYEE_ROOT_MANAGER_NATIONAL_ID);
 
         mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
@@ -738,7 +739,7 @@ public class EmployeeIntegrationTest {
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getFirstName()).isEqualTo(updatedName);
         assertThat(actualEmployee.getNationalId()).isEqualTo(uniqueNationalId);
-
+        assertThat(actualEmployee.getDegree()).isEqualTo(Degree.INTERMEDIATE);
         assertThat(actualEmployee.getManager().getNationalId()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID);
         assertThat(actualEmployee.getManager().getFirstName()).isEqualTo(EMPLOYEE_ROOT_MANAGER_NAME);
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(UNIQUE_TEAM_NAME);
@@ -954,6 +955,26 @@ public class EmployeeIntegrationTest {
         Employee actualEmployee = dbEmployee.get();
         assertThat(actualEmployee.getManager().getId()).isEqualTo(employeeToUpdate.getManager().getId());
         assertThat(actualEmployee.getTeam().getName()).isEqualTo(employeeToUpdate.getTeam().getName());
+    }
+    @Test
+    @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
+    void updateEmployee_WithNonUniqueNationalId_ReturnsBadRequestStatus() throws Exception {
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
+        Map<String, Object> bodyMap = new HashMap<>();
+        bodyMap.put("nationalId", EMPLOYEE_ROOT_MANAGER_NATIONAL_ID);
+
+        mockMvc.perform(patch(EMPLOYEE_API + "/" + employeeToUpdate.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType("application/merge-patch+json")
+                        .content(objectMapper.writeValueAsString(bodyMap)))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(ERROR_NATIONAL_ID_EXISTS));
+        Optional<Employee> dbEmployee = employeeRepository.findById(employeeToUpdate.getId());
+        assertThat(dbEmployee).isPresent();
+        Employee actualEmployee = dbEmployee.get();
+        //ASSERT THAT THE NATIONAL ID DID NOT CHANGE
+        assertThat(actualEmployee.getNationalId()).isEqualTo(employeeToUpdate.getNationalId());
     }
 
     @Test
