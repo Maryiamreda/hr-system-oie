@@ -17,9 +17,7 @@ import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeRequestDTO {
-    @NotNull(message = ERROR_EMPLOYEE_NAME_EMPTY)
     @Size(min = 2, message = EMPLOYEE_NAME_MIN_LENGTH )
-    private String name;
     @NotNull(message = ERROR_EMPLOYEE_FIRST_NAME_EMPTY)
     private String firstName;
     @NotNull(message = ERROR_EMPLOYEE_LAST_NAME_EMPTY)

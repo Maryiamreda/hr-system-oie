@@ -6,7 +6,6 @@
     <team id="10" name="UNIQUE_TEAM_NAME"/>
     <department id="10" name="UNIQUE_DEPARTMENT_NAME"/>
     <employee id="4"
-              name="MANAGER"
               first_name="EMPLOYEE"
               last_name="FOUR"
               hire_date="2018-01-01"
@@ -14,13 +13,13 @@
               department_id="10"
               team_id="10"
               gross_salary="5000.00"/>
-    <employee id="2" name="ROOT_MANAGER"
+    <employee id="2"
               first_name="EMPLOYEE"
               last_name="TWO"
               hire_date="2018-01-01"
               national_id="ROOT_MANAGER-ID-111111111"
               department_id="10" gross_salary="5000.00"/>
-    <employee id="1" name="UNIQUE_EMPLOYEE_NAME_UPDATE"
+    <employee id="1"
               first_name="EMPLOYEE"
               last_name="ONE"
               hire_date="2018-01-01"

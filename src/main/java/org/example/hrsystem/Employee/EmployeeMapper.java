@@ -15,7 +15,6 @@ public class EmployeeMapper {
 
     public Employee toEntity(EmployeeRequestDTO employeeRequestDTO) {
         return Employee.builder()
-                .name(employeeRequestDTO.getName())
                 .firstName(employeeRequestDTO.getFirstName())
                 .lastName(employeeRequestDTO.getLastName())
                 .birthDate(employeeRequestDTO.getBirthDate())
@@ -31,7 +30,7 @@ public class EmployeeMapper {
     public EmployeeResponseDTO toResponse(Employee employee) {
         EmployeeResponseDTO employeeResponseDTO = EmployeeResponseDTO.builder().
                 id(employee.getId()).
-                name(employee.getName())
+                firstName(employee.getFirstName())
                 .manager(employee.getManager())
                 .expertises(employee.getExpertises())
                 .build();
@@ -46,7 +45,8 @@ public class EmployeeMapper {
 
     public EmployeeRequestDTO toDto(Employee employee) {
         EmployeeRequestDTO dto = EmployeeRequestDTO.builder().
-                name(employee.getName())
+                 firstName(employee.getFirstName())
+                .lastName(employee.getLastName())
                 .departmentName(employee.getDepartment().getName())
                 .gender(Gender.valueOf(employee.getGender()))
                 .birthDate(employee.getBirthDate())

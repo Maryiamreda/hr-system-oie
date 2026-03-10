@@ -16,7 +16,7 @@ public class EmployeeResponseDTO {
     @Id
     @NotNull(message = "ID cannot be null")
     private Long id;
-    private String name;
+    private String firstName;
     @NotNull(message = "Department name be empty")
     private String departmentName;
     private String teamName;

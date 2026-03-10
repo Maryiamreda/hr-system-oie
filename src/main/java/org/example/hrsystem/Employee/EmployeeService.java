@@ -108,9 +108,7 @@ public class EmployeeService {
         JsonNode dtoNode = objectMapper.convertValue(currentDto, JsonNode.class);
         JsonNode patchedNode = patch.apply(dtoNode);
         EmployeeRequestDTO patchedDto = objectMapper.treeToValue(patchedNode, EmployeeRequestDTO.class);
-        if (patchedDto.getName() != null && patchedDto.getName().length() > 2) {
-            employee.setName(patchedDto.getName());
-        }
+
         employee.setGender(patchedDto.getGender() == null ? null : String.valueOf(patchedDto.getGender()));
         employee.setBirthDate(patchedDto.getBirthDate());
         employee.setGraduationDate(patchedDto.getGraduationDate());

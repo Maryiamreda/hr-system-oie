@@ -6,7 +6,7 @@
     <expertise id="20" name="OOP"/>
     <employee
             id="1"
-            name="ROOT_MANAGER"
+
             first_name="ROOT"
             last_name="MANAGER"
             national_id="ROOT_MANAGER-ID-111111111"
@@ -24,7 +24,6 @@
             expertise_id="20"/>
     <employee
             id="2"
-            name="MANAGER"
             first_name="MAIN"
             last_name="MANAGER"
             national_id="MANAGER-ID-222222222"
@@ -37,7 +36,6 @@
 
     <employee
             id="3"
-            name="UNIQUE_EMPLOYEE_NAME_DELETE"
             first_name="DELETE"
             last_name="EMPLOYEE"
             national_id="EMPLOYEE-ID-333333333"
@@ -53,7 +51,6 @@
 
     <employee
             id="4"
-            name="EMPLOYEE_UNDER_MANAGER"
             first_name="UNDER"
             last_name="MANAGER"
             national_id="EMPLOYEE-ID-444444444"
@@ -69,7 +66,6 @@
 
     <employee
             id="5"
-            name="EMPLOYEE_5"
             first_name="EMPLOYEE"
             last_name="FIVE"
             national_id="EMPLOYEE-ID-555555555"
@@ -85,7 +81,6 @@
 
     <employee
             id="6"
-            name="EMPLOYEE_6"
             first_name="EMPLOYEE"
             last_name="SIX"
             national_id="EMPLOYEE-ID-666666666"
