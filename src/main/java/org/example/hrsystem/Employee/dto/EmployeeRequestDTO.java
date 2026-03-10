@@ -28,6 +28,7 @@ public class EmployeeRequestDTO {
     private Gender gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
+    private int yearsOfExperience;
     @NotNull(message = ERROR_DEPARTMENT_NAME_EMPTY)
     private String departmentName;
     private String teamName;

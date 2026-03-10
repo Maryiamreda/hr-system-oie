@@ -121,8 +121,9 @@ public class EmployeeService {
             employee.setNationalId(patchedDto.getNationalId());
         }
         employee.setGender(patchedDto.getGender() == null ? null : String.valueOf(patchedDto.getGender()));
-        employee.setDegree(patchedDto.getDegree() == null ? null :patchedDto.getDegree());
+        employee.setDegree(patchedDto.getDegree());
         employee.setBirthDate(patchedDto.getBirthDate());
+        employee.setYearsOfExperience(patchedDto.getYearsOfExperience());
         employee.setGraduationDate(patchedDto.getGraduationDate());
         if (patchedDto.getGrossSalary() != null && !Objects.equals(patchedDto.getGrossSalary(), employee.getGrossSalary())) {
             employee.setGrossSalary(patchedDto.getGrossSalary());

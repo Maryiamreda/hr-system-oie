@@ -39,16 +39,17 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                             degree,
                             birth_date,
                             graduation_date,
+                            years_experience,
                             hire_date,
                             gross_salary, manager_id, department_id, team_id) AS (
-                SELECT id, gender, first_name, last_name,national_id, degree, birth_date, graduation_date,hire_date, gross_salary, manager_id, department_id, team_id
+                SELECT id, gender, first_name, last_name,national_id, degree, birth_date, graduation_date,years_experience,hire_date, gross_salary, manager_id, department_id, team_id
                 FROM employee WHERE manager_id = :managerId
                 UNION ALL
                 SELECT e.id,
-                      
                        e.first_name,
                        e.last_name,
-                       e.national_id,   e.degree, e.gender, e.birth_date, e.graduation_date, e.hire_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
+                       e.national_id,   e.degree, e.gender, e.birth_date, e.graduation_date,
+                       e.years_experience, e.hire_date, e.gross_salary, e.manager_id, e.department_id, e.team_id
                 FROM employee e
                 JOIN subordinates s ON e.manager_id = s.id
             )

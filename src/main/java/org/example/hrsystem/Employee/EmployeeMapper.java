@@ -19,6 +19,7 @@ public class EmployeeMapper {
                 .lastName(employeeRequestDTO.getLastName())
                 .birthDate(employeeRequestDTO.getBirthDate())
                 .nationalId(employeeRequestDTO.getNationalId())
+                .yearsOfExperience(employeeRequestDTO.getYearsOfExperience())
                 .hireDate(LocalDate.now())
                 .degree(employeeRequestDTO.getDegree())
                 .graduationDate(employeeRequestDTO.getGraduationDate())
@@ -53,6 +54,7 @@ public class EmployeeMapper {
                 .gender(Gender.valueOf(employee.getGender()))
                 .birthDate(employee.getBirthDate())
                 .graduationDate(employee.getGraduationDate())
+                .yearsOfExperience(employee.getYearsOfExperience())
                 .grossSalary(employee.getGrossSalary())
                 .build();
         if (employee.getManager() != null) {

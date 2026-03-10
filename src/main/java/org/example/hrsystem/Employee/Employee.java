@@ -30,6 +30,8 @@ public class Employee {
     private String gender;
     private LocalDate birthDate;
     private LocalDate graduationDate;
+    @Column(name="years_experience")
+    private Integer yearsOfExperience;
     @Column(name = "national_id", unique = true)
     private String nationalId;
     @Column(name = "hire_date")
