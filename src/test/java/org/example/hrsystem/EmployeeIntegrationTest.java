@@ -73,8 +73,6 @@ public class EmployeeIntegrationTest {
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
     private EmployeeMapper employeeMapper;
     private static final String EMPLOYEE_NAME = "maryiam";
     private static final String EMPLOYEE_LAST_NAME = "maryiam";
@@ -82,12 +80,12 @@ public class EmployeeIntegrationTest {
     private static final String EMPLOYEE_NATIONAL_ID="12345678901234";
     private static final String EMPLOYEE_ROOT_MANAGER_NATIONAL_ID = "ROOT_MANAGER-ID-111111111";
     private static final String EMPLOYEE_TO_UPDATE_NATIONAL_ID = "EMPLOYEE-ID-666626666";
+    private static final String MANAGER_TO_DELETE_NATIONAL_ID = "MANAGER-ID-222222222";
+    private static final String EMPLOYEE_TO_DELETE_NATIONAL_ID = "EMPLOYEE-ID-666666666";
+
 
     //UNIQUE_EMPLOYEE_NAME_UPDATE
     private static final String UNIQUE_DEPARTMENT_NAME = "UNIQUE_DEPARTMENT_NAME";
-    private static final String UNIQUE_EMPLOYEE_NAME_UPDATE = "UNIQUE_EMPLOYEE_NAME_UPDATE";
-    private static final String UNIQUE_EMPLOYEE_NAME_DELETE = "UNIQUE_EMPLOYEE_NAME_DELETE";
-    private static final String UNIQUE_MANAGER_NAME_DELETE = "MANAGER";
 
     private static final String UNIQUE_TEAM_NAME = "UNIQUE_TEAM_NAME";
     private static final Long NONVALID_ID = -888L;
@@ -453,7 +451,6 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithValidTeam_ReturnsCreatedStatus() throws Exception {
-        Employee manager = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //create new inputEmployee object
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
@@ -484,7 +481,6 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void addNewEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
-        Employee manager = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         String inValidIdTeamName = "NON EXISTENCE NAME ";
         EmployeeRequestDTO inputEmployee = EmployeeRequestDTO.builder()
                 .name(EMPLOYEE_NAME)
@@ -514,7 +510,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void getEmployee_WithValidId_ReturnEmployeeInfo() throws Exception {
         //given
-        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee ExpectedEmployee = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         // act
         MvcResult result = mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId())).andExpect(status().isOk()).andReturn();
         //assert
@@ -530,7 +526,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void getSalaryInfo_WithValidEmployeeIdAnd15PercentTaxRateAnd500FixedReduction_ReturnCorrectEmployeeSalary() throws Exception {
         //given
-        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee ExpectedEmployee = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         //net Salary= gross Salary - (Gross Salary * 0.15) - 500
         BigDecimal netSalary = new BigDecimal("3750.00");
         // act
@@ -568,7 +564,7 @@ public class EmployeeIntegrationTest {
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void getEmployee_WithMultipleExpertises_ReturnsAllExpertises() throws Exception {
 
-        Employee ExpectedEmployee = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee ExpectedEmployee = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         // when
         mockMvc.perform(get(EMPLOYEE_API + "/" + ExpectedEmployee.getId()))
                 .andExpect(status().isOk())
@@ -622,7 +618,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void getDirectSubordinates_WithValidManager_ReturnsOkStatusWithDirectSubordinates() throws Exception {
-        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee manager = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         Pageable pageable = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
         Page<Employee> dBTeamEmployeeList = employeeRepository.findByManager(manager, pageable);
         List<Long> dBTeamEmployeeListIds = dBTeamEmployeeList.stream().map(Employee::getId).toList();
@@ -669,7 +665,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/get-employees-under-manager-recursive.xml")
     public void getRecursiveSubordinatesUnderManger_WithValidManager_ReturnsOkStatusWithRecursiveSubordinates() throws Exception {
-        Employee manager = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee manager = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         List<Employee> expectedEmployees = List.of(
                 employeeRepository.findById(2L).orElseThrow(), // MANAGER
                 employeeRepository.findById(3L).orElseThrow(), // UNIQUE_EMPLOYEE_NAME_DELETE
@@ -709,7 +705,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidData_ReturnsOkStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
 
         String updatedName = "unique-updated-employee";
         BigDecimal updatedSalary = new BigDecimal("7000.00");
@@ -789,7 +785,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNonValidTeamName_ReturnsBadRequestStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("teamName", NON_EXISTENCE_NAME);
 
@@ -812,7 +808,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNonValidDepartmentName_ReturnsBadRequestStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("departmentName", NON_EXISTENCE_NAME);
 
@@ -833,7 +829,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNewExpertise_ReturnsOkStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         List<String> expertises = List.of("OOP");
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("expertise", expertises);
@@ -862,7 +858,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithValidNullFields_ReturnOkStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("gender", null);
         bodyMap.put("birthDate", null);
@@ -889,7 +885,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNullDepartment_ReturnsBadRequestStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("departmentName", null);
 
@@ -910,7 +906,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNullManager_ReturnsBadRequestStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("managerNationalId", null);
 
@@ -932,7 +928,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/updateEmployee_WithValidData.xml")
     void updateEmployee_WithNullTeam_ReturnsBadRequestStatus() throws Exception {
-        Employee employeeToUpdate = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_UPDATE).get(0);
+        Employee employeeToUpdate = employeeRepository.findByNationalId(EMPLOYEE_TO_UPDATE_NATIONAL_ID).get();
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("teamName", null);
 
@@ -954,7 +950,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void deleteNonManagerEmployee_WithValidId_ReturnOkStatus() throws Exception {
-        Long employeeToDeleteId = employeeRepository.findByName(UNIQUE_EMPLOYEE_NAME_DELETE).get(0).getId();
+        Long employeeToDeleteId = employeeRepository.findByNationalId(EMPLOYEE_TO_DELETE_NATIONAL_ID).get().getId();
         mockMvc.perform(delete(EMPLOYEE_API + "/" + employeeToDeleteId)
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
@@ -967,7 +963,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     void deleteEmployee_WithNoRootManager_ReturnConflictStatus() throws Exception {
-        Employee managerToDelete = employeeRepository.findByName(EMPLOYEE_ROOT_MANAGER_NAME).get(0);
+        Employee managerToDelete = employeeRepository.findByNationalId(EMPLOYEE_ROOT_MANAGER_NATIONAL_ID).get();
         mockMvc.perform(delete(EMPLOYEE_API + "/" + managerToDelete.getId()).
                         contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
@@ -992,7 +988,7 @@ public class EmployeeIntegrationTest {
     @Test
     @DatabaseSetup(value = "/dataset/addNewEmployee_WithValidDepartment.xml")
     public void deleteManagerEmployee_WithManagerHasSubordinates_ShouldMovesSubordinatesToUpperManager() throws Exception {
-        Employee managerToDelete = employeeRepository.findByName(UNIQUE_MANAGER_NAME_DELETE).get(0);
+        Employee managerToDelete = employeeRepository.findByNationalId(MANAGER_TO_DELETE_NATIONAL_ID).get();
         Employee upperManager = managerToDelete.getManager();
         List<Employee> subordinatesBeforeManagerDeletion = employeeRepository.findByManager(managerToDelete);
         List<Employee> upperManagerInitialSubordinates = employeeRepository.findByManager(upperManager);

@@ -5,7 +5,7 @@
     <employee id="1" name="ROOT_MANAGER"
               first_name="EMPLOYEE"
               last_name="ONE"
-              national_id="EMPLOYEE-ID-166666666"
+              national_id="ROOT_MANAGER-ID-111111111"
               degree="FRESH"
               hire_date="2024-06-15"
               department_id="10" gross_salary="5000.00"/>
