@@ -71,7 +71,13 @@ public class EmployeeService {
 
         return employeeMapper.toResponse(employee.get());
     }
-
+    public void badMethod() {
+        try {
+            // do something
+        } catch (Exception e) {
+            // empty catch block -> PMD violation
+        }
+    }
     public EmployeeSalaryInfoDTO getEmployeeSalaryInfoDTO(Long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));

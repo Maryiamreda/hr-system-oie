@@ -31,11 +31,23 @@ jobs:
           name: app-jar
           path: target/*.jar #tell GitHub which files to include
 
-      - name: Upload HTML report
+      - name: Upload Test HTML report
         uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: target/site/surefire-report.html
+
+
+      - name: Generate PMD HTML report
+        run: mvn pmd:pmd site
+        if: always()
+
+      - name: Upload PMD HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pmd-html-report
+          path: target/site/pmd.html
 
       - name: Run Tests and Lint
         run: mvn verify
