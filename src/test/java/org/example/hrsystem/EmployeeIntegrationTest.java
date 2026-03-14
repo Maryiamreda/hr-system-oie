@@ -16,7 +16,6 @@ import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.enums.Degree;
 import org.example.hrsystem.enums.Gender;
 import org.example.hrsystem.Employee.EmployeeRepository;
-import org.example.hrsystem.Department.DepartmentRepository;
 
 
 import org.junit.jupiter.api.BeforeEach;

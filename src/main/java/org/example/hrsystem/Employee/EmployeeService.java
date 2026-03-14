@@ -3,6 +3,7 @@ package org.example.hrsystem.Employee;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gravity9.jsonpatch.mergepatch.JsonMergePatch;
+import jakarta.validation.Valid;
 import org.example.hrsystem.Department.Department;
 import org.example.hrsystem.Department.DepartmentRepository;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
@@ -10,6 +11,10 @@ import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
 import org.example.hrsystem.Expertise.Expertise;
 import org.example.hrsystem.Expertise.ExpertiseRepository;
+import org.example.hrsystem.LeaveRecord.LeaveRecord;
+import org.example.hrsystem.LeaveRecord.LeaveRecordMapper;
+import org.example.hrsystem.LeaveRecord.LeaveRepository;
+import org.example.hrsystem.LeaveRecord.LeaveRequestDto;
 import org.example.hrsystem.utilities.SalaryCalculator;
 import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
@@ -24,6 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
@@ -35,6 +44,8 @@ public class EmployeeService {
     @Autowired
     private EmployeeMapper employeeMapper;
     @Autowired
+    private LeaveRecordMapper leaveRecordMapper;
+    @Autowired
     private ExpertiseRepository expertiseRepository;
     @Autowired
     private DepartmentRepository departmentRepository;
@@ -44,6 +55,8 @@ public class EmployeeService {
     private ObjectMapper objectMapper;
     @Autowired
     private SalaryCalculator salaryCalculator;
+    @Autowired
+    private LeaveRepository leaveRepository;
 
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
@@ -114,7 +127,7 @@ public class EmployeeService {
         if (patchedDto.getLastName() != null && patchedDto.getLastName().length() > 2) {
             employee.setLastName(patchedDto.getLastName());
         }
-        if (patchedDto.getNationalId() != null  && !patchedDto.getNationalId().equals(employee.getNationalId()) ) {
+        if (patchedDto.getNationalId() != null && !patchedDto.getNationalId().equals(employee.getNationalId())) {
             if (employeeRepository.existsByNationalId(patchedDto.getNationalId())) {
                 throw new ConflictException(ERROR_NATIONAL_ID_EXISTS);
             }
@@ -176,6 +189,31 @@ public class EmployeeService {
                 () -> new BadRequestException(ERROR_MANAGER_NOT_EXIST));
     }
 
+    public LeaveRecord addEmployeeLeaveRequest(@Valid LeaveRequestDto leaveRequestDto, Long employeeId) {
+        LeaveRecord leaveRecord = leaveRecordMapper.toEntity(leaveRequestDto);
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow();
+        leaveRecord.setEmployee(employee);
+
+
+        LocalDate current = leaveRequestDto.getStartDate();
+        LocalDate endDate = leaveRequestDto.getStartDate().plusDays(leaveRequestDto.getDays());
+        while (current.isBefore(endDate)) {
+            if (current.getDayOfWeek() == DayOfWeek.FRIDAY || current.getDayOfWeek() == DayOfWeek.SATURDAY) {
+                endDate = endDate.plusDays(1);
+            }
+            current = current.plusDays(1);
+        }
+        leaveRecord.setEndDate(endDate);
+
+        Optional<LeaveRecord> record = leaveRepository.findLastRecordByEmployeeId(employeeId);
+        if (record.isPresent()) {
+            leaveRecord.setTotalLeaveDays(record.get().getTotalLeaveDays() + leaveRequestDto.getDays());
+        } else {
+            leaveRecord.setTotalLeaveDays(leaveRequestDto.getDays());
+        }
+        return leaveRepository.save(leaveRecord);
+
+    }
 
     private Department getDepartmentOrThrow(String departmentName) {
         if (departmentName == null) {

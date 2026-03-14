@@ -13,6 +13,6 @@ set
     last_name = ''
 where LOCATE(' ', name) = 0;
 
-alter table employee alter column first_name VARCHAR(255) NOT NULL;
-alter table employee alter column last_name VARCHAR(255) NOT NULL;
+alter table employee MODIFY COLUMN first_name VARCHAR(255) NOT NULL;
+alter table employee MODIFY COLUMN last_name VARCHAR(255) NOT NULL;
 alter table employee drop if exists  name ;
