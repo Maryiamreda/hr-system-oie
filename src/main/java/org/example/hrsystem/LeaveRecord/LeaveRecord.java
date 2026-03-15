@@ -29,7 +29,7 @@ public class LeaveRecord {
     private LocalDate startDate;
     @Column(name = "end_date")
     private LocalDate endDate;
-    private String notes;
+    private String note;
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;

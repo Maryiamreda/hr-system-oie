@@ -8,7 +8,7 @@ public class LeaveRecordMapper {
         return LeaveRecord.builder()
                 .days(leaveRequestDto.getDays())
                 .startDate(leaveRequestDto.getStartDate())
-                .notes(leaveRequestDto.getNotes())
+                .note(leaveRequestDto.getNote())
                 .build();
     }
 }

@@ -5,6 +5,6 @@ days INT NOT NULL ,
 total_leave_days INT NOT NULL DEFAULT 0,
 start_date DATE NOT NULL,
 end_date DATE NOT NULL,
-notes VARCHAR(250),
+note VARCHAR(250),
 CONSTRAINT FK_EmployeeLeave FOREIGN KEY ( employee_id ) REFERENCES employee(id)
 )

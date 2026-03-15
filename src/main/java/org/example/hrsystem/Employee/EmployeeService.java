@@ -32,7 +32,6 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static org.example.hrsystem.utilities.EmployeeMessageConstants.*;
@@ -77,12 +76,10 @@ public class EmployeeService {
     }
 
     public EmployeeResponseDTO getEmployeeResponseDTO(Long employeeId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        if (employee.isEmpty()) {
-            throw new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST);
-        }
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
 
-        return employeeMapper.toResponse(employee.get());
+        return employeeMapper.toResponse(employee);
     }
 
     public EmployeeSalaryInfoDTO getEmployeeSalaryInfoDTO(Long employeeId) {
@@ -191,7 +188,7 @@ public class EmployeeService {
 
     public LeaveRecord addEmployeeLeaveRequest(@Valid LeaveRequestDto leaveRequestDto, Long employeeId) {
         LeaveRecord leaveRecord = leaveRecordMapper.toEntity(leaveRequestDto);
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow();
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
         leaveRecord.setEmployee(employee);
 
 

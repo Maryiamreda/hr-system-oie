@@ -25,4 +25,9 @@ public class EmployeeMessageConstants {
     public static final String ERROR_SALARY_EMPTY = "Salary cannot be empty";
     public static final String EMPLOYEE_NAME_MIN_LENGTH = "Employee name cannot be less letters than 3";
 
+    public static final String ERROR_NONVALID_LEAVE_DAYS = "Leave Days Must be At Least One Days";
+    public static final String ERROR_NULL_LEAVE_DAYS = "Leave Days Can't be Null ";
+    public static final String ERROR_NULL_LEAVE_START_DATE = "Start Date Days Can't be Null ";
+
+
 }
