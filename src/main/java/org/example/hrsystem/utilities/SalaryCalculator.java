@@ -7,7 +7,7 @@ import java.math.RoundingMode;
 
 @Component
 public class SalaryCalculator {
-
+    private static final BigDecimal WORKING_DAYS_PER_MONTH = BigDecimal.valueOf(30);
     private static final BigDecimal TAX_RATE = new BigDecimal("0.15");
     private static final BigDecimal FIXED_DEDUCTION = new BigDecimal("500.00");
 
@@ -23,6 +23,12 @@ public class SalaryCalculator {
         return grossSalary.subtract(totalDeductions)
                 .setScale(2, RoundingMode.HALF_UP);
     }
+    public BigDecimal calculateLeaveDeduction(BigDecimal grossSalary, int exceededDays) {
+        return grossSalary
+                .divide(WORKING_DAYS_PER_MONTH, 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(exceededDays));
+    }
+
 }
 
 

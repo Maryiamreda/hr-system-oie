@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import org.example.hrsystem.Employee.dto.EmployeeRequestDTO;
 import org.example.hrsystem.Employee.dto.EmployeeResponseDTO;
 import org.example.hrsystem.Employee.dto.EmployeeSalaryInfoDTO;
+import org.example.hrsystem.LeaveRecord.LeaveRecord;
+import org.example.hrsystem.LeaveRecord.LeaveRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -89,5 +91,13 @@ public class EmployeeController {
     ) {
         employeeService.deleteEmployee(employeeId);
         return ResponseEntity.ok(SUCCESS_EMPLOYEE_DELETED);
+    }
+
+    @PostMapping("/{employeeId}/leave")
+    public ResponseEntity<LeaveRecord> addEmployeeLeaveRequest(
+            @PathVariable Long employeeId,
+            @RequestBody @Valid LeaveRequestDto leaveRequestDto) {
+        LeaveRecord leaveRecord = employeeService.addEmployeeLeaveRequest(leaveRequestDto, employeeId);
+        return new ResponseEntity<>(leaveRecord, HttpStatus.CREATED);
     }
 }
