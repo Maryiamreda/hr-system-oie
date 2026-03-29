@@ -38,7 +38,7 @@ public class Employee {
     private LocalDate hireDate;
     @Enumerated(EnumType.STRING)
     private Degree degree;
-    @Column(name = "gross_salary", precision = 12, scale = 2)
+    @Column(name = "gross_salary", precision = 10, scale = 2)
     private BigDecimal grossSalary;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

@@ -1,6 +1,7 @@
 package org.example.hrsystem.LeaveRecord;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,7 @@ public class LeaveRequestDto {
     @Positive(message = ERROR_NONVALID_LEAVE_DAYS)
     private Integer days;
     @NotNull(message = ERROR_NULL_LEAVE_START_DATE)
+    @PastOrPresent(message=ERROR_NONVALID_LEAVE_START_DATE)
     private LocalDate startDate;
     private String note;
 }

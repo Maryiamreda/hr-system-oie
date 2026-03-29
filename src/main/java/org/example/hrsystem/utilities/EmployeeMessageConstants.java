@@ -29,5 +29,5 @@ public class EmployeeMessageConstants {
     public static final String ERROR_NULL_LEAVE_DAYS = "Leave Days Can't be Null ";
     public static final String ERROR_NULL_LEAVE_START_DATE = "Start Date Days Can't be Null ";
 
-
+    public static final String ERROR_NONVALID_LEAVE_START_DATE = "Start Date Must To Be Recent";
 }

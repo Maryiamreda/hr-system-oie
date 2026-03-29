@@ -15,6 +15,9 @@ import org.example.hrsystem.LeaveRecord.LeaveRecord;
 import org.example.hrsystem.LeaveRecord.LeaveRecordMapper;
 import org.example.hrsystem.LeaveRecord.LeaveRepository;
 import org.example.hrsystem.LeaveRecord.LeaveRequestDto;
+import org.example.hrsystem.SalaryRecord.SalaryRecord;
+import org.example.hrsystem.SalaryRecord.SalaryRecordRepository;
+import org.example.hrsystem.enums.SalaryRecordType;
 import org.example.hrsystem.utilities.SalaryCalculator;
 import org.example.hrsystem.Team.Team;
 import org.example.hrsystem.Team.TeamRepository;
@@ -56,7 +59,13 @@ public class EmployeeService {
     private SalaryCalculator salaryCalculator;
     @Autowired
     private LeaveRepository leaveRepository;
-
+    @Autowired
+    private SalaryRecordRepository salaryRecordRepository;
+    private static final int REGULAR_LEAVE_DAYS = 21;
+    private static final int SENIOR_LEAVE_DAYS = 30;
+    private static final int SENIOR_EXPERIENCE_YEARS = 10;
+    private static final DayOfWeek WEEKEND_DAY_1 = DayOfWeek.FRIDAY;
+    private static final DayOfWeek WEEKEND_DAY_2 = DayOfWeek.SATURDAY;
     public EmployeeResponseDTO addEmployee(EmployeeRequestDTO employeeRequestDTO) {
         Employee employee = employeeMapper.toEntity(employeeRequestDTO);
         if (employeeRepository.existsByNationalId(employeeRequestDTO.getNationalId())) {
@@ -188,25 +197,42 @@ public class EmployeeService {
 
     public LeaveRecord addEmployeeLeaveRequest(@Valid LeaveRequestDto leaveRequestDto, Long employeeId) {
         LeaveRecord leaveRecord = leaveRecordMapper.toEntity(leaveRequestDto);
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new NotFoundException(ERROR_EMPLOYEE_NOT_EXIST));
         leaveRecord.setEmployee(employee);
 
-
+        // calculate end date skipping weekends
         LocalDate current = leaveRequestDto.getStartDate();
         LocalDate endDate = leaveRequestDto.getStartDate().plusDays(leaveRequestDto.getDays());
         while (current.isBefore(endDate)) {
-            if (current.getDayOfWeek() == DayOfWeek.FRIDAY || current.getDayOfWeek() == DayOfWeek.SATURDAY) {
+            if (current.getDayOfWeek() == WEEKEND_DAY_1|| current.getDayOfWeek() == WEEKEND_DAY_2) {
                 endDate = endDate.plusDays(1);
             }
             current = current.plusDays(1);
         }
         leaveRecord.setEndDate(endDate);
+        int allowedDays = getAllowedLeaveDays(employee.getHireDate());
 
-        Optional<LeaveRecord> record = leaveRepository.findLastRecordByEmployeeId(employeeId);
-        if (record.isPresent()) {
-            leaveRecord.setTotalLeaveDays(record.get().getTotalLeaveDays() + leaveRequestDto.getDays());
-        } else {
-            leaveRecord.setTotalLeaveDays(leaveRequestDto.getDays());
+        // calculate total leave days
+        Optional<LeaveRecord> lastRecord = leaveRepository.findLastRecordByEmployeeId(employeeId);
+        int previousTotal = 0;
+        if (lastRecord.isPresent()) {
+            previousTotal = lastRecord.get().getTotalLeaveDays();
+        }
+        int newTotal = previousTotal + leaveRequestDto.getDays();
+        leaveRecord.setTotalLeaveDays(newTotal);
+        if (newTotal > allowedDays) {
+            int exceededDays = previousTotal >= allowedDays
+                    ? leaveRequestDto.getDays()
+                    : newTotal - allowedDays;
+            BigDecimal deductionAmount = salaryCalculator.calculateLeaveDeduction(employee.getGrossSalary(), exceededDays);
+            SalaryRecord deduction = SalaryRecord.builder()
+                    .employee(employee)
+                    .amount(deductionAmount)
+                    .type(String.valueOf(SalaryRecordType.DEDUCTION))
+                    .salaryMonth((byte) leaveRequestDto.getStartDate().getMonthValue())
+                    .salaryYear((short) leaveRequestDto.getStartDate().getYear())
+                    .build();
+            salaryRecordRepository.save(deduction);
         }
         return leaveRepository.save(leaveRecord);
 
@@ -238,5 +264,8 @@ public class EmployeeService {
 
     }
 
-
+    private int getAllowedLeaveDays(LocalDate hireDate) {
+        int yearsWorked = Period.between(hireDate, LocalDate.now()).getYears();
+        return yearsWorked >= SENIOR_EXPERIENCE_YEARS ? SENIOR_LEAVE_DAYS : REGULAR_LEAVE_DAYS;
+    }
 }
